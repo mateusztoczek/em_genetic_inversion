@@ -74,7 +74,7 @@ def run():
             if u_input.lower() == 'exit':
                 break
             u_params= parse_request(u_input)
-            result= run_algorithm(u_params, config)
+            result= run_algorithm(u_params)
             print(f"Result: {result}")
 
         except SystemExit:

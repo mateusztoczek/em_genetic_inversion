@@ -10,6 +10,9 @@ RUN_DEFAULT_CONFIG ={
     "path":{
         "dir_output": "./output",
         "dir_log": "./logs"
+    },
+    "display":{
+        "decimal_accuracy": 4
     }
 }
 
