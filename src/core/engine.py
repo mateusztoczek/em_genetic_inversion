@@ -28,6 +28,23 @@ def generate_population(population_size: int, m: int, dim: int) -> GAPopulation:
     return GAPopulation(population=[generate_individual(m,dim) for _ in range(population_size)])
 
 
+def decode_chromosome(chromosome: list, a: float, b: float) -> float:
+    if not chromosome: raise ValueError("Cannot decode empty chromosome")
+    m= len(chromosome)
+    dec_sub= (2**m)-1
+    if dec_sub<=0.0: raise ValueError("Division by 0 detected.")
+    chromosome_decimal= 0
+    for bit in chromosome:
+        chromosome_decimal=(chromosome_decimal<<1) | bit
+    
+    decoded= a+((chromosome_decimal*(b-a))/dec_sub)
+    return decoded
+
+
+def decode_individual(individual: GAIndividual, a: float, b: float) -> list[float]:
+    return [decode_chromosome(chromosome, a, b) for chromosome in individual.chromosomes]
+
+
 def run_algorithm(u_params: dict):
     if not isinstance(u_params, dict):
            raise TypeError("Invalid request parameters format.")
