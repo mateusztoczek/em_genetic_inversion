@@ -1,4 +1,6 @@
 import math
+import random
+
 
 def calc_bit_len(a: float, b: float, precision: float) -> int:
     if b-a <=0.0:
@@ -6,6 +8,11 @@ def calc_bit_len(a: float, b: float, precision: float) -> int:
     m= math.ceil(math.log2((b-a)/precision+1))
 
     return m
+
+
+# TODO: change list of int to bitarray or smt to not waste memory on such stupid thing
+def generate_chromosome(m: int)-> list:
+    return [random.randint(0,1) for _ in range(m)]
 
 
 def run_algorithm(u_params: dict):
