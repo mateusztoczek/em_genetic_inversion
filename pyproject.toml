@@ -1,5 +1,5 @@
 [build-system]
-requires= ["setuptools>=68"]
+requires= ["setuptools<82"]
 build-backend= "setuptools.build_meta"
 
 [project]
@@ -9,7 +9,11 @@ requires-python= ">=3.11"
 dependencies= [
     "pandas",
     "scikit-learn",
-    "pyyaml"
+    "pyyaml",
+    "numpy",
+    "benchmark-functions",
+    "opfunu",
+    "scipy"
 ]
 
 [tool.setuptools.packages.find]
