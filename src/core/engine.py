@@ -45,6 +45,18 @@ def decode_individual(individual: GAIndividual, a: float, b: float) -> list[floa
     return [decode_chromosome(chromosome, a, b) for chromosome in individual.chromosomes]
 
 
+def evaluate_individual(individual: GAIndividual, ga_function, a, b):
+    decoded_i= decode_individual(individual=individual,a=a,b=b)
+    fitness= ga_function(decoded_i)
+    individual.fitness_score= fitness
+
+
+def evaluate_population(population: GAPopulation, ga_function,a,b):
+    for ind in population:
+        evaluate_individual(ind, ga_function,a, b)
+
+
+
 def run_algorithm(u_params: dict):
     if not isinstance(u_params, dict):
            raise TypeError("Invalid request parameters format.")
