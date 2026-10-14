@@ -26,7 +26,7 @@ def test_run_algorithm():
         "function":{
             "name":"mccormick",
             "goal": "min",
-            "dimensions": 2,
+            "dimension": 2,
             "scope":[-3.0,4.0],
             "precision": 0.0001
         }, "options":{

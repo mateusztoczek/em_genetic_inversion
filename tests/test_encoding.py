@@ -1,6 +1,6 @@
 import pytest
 
-from src.core.engine import decode_chromosome
+from src.core.encoding import decode_chromosome
 
 def test_decode_chromosome():
     a,b= -10.0, 10.0
