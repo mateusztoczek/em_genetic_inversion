@@ -22,14 +22,23 @@ def rastrigin(x:list[float], A: float = 10.0)-> float:
     return cond1+cond2    
 '''
 
+FUNCTION_NAMES= ("mccormick", "rastigin", "cec2014_f9")
+
+
+def validate_function(f_name: str, dim: int):
+    if f_name not in FUNCTION_NAMES: raise ValueError(f"Unknown function name: {f_name}")
+    if dim<1: raise ValueError("At least 1 dimension is required.")
+    if f_name=="mccormick" and dim!=2: raise ValueError(f"Mccormick function requires exactly 2 variables. Number of provided variables: {dim}")
+    if f_name=="cec2014_f9" and dim not in (10,20,30,100): raise ValueError("Unsupported number of CEC 2014 F9 function dimensions.")
+
+
 def get_function(f_name: str, dim: int):
+    validate_function(f_name, dim)
     if f_name== 'mccormick':
-        if dim!=2: raise ValueError("fMccormick function requires exactly 2 variables. Nuber of provided variables: {dim}")
         return benchmark_functions.McCormick()
     if f_name== "rastigin":
         return benchmark_functions.Rastrigin(n_dimensions= dim)
     if f_name=="cec2014_f9":
-        if dim not in (10,20,30,100): raise ValueError("Unsupported number of CEC 2014 F9 function dimensions.")
         f_func= F92014(ndim=dim)
 
         def cec_function(x):

@@ -1,6 +1,15 @@
+import copy
+import random
+from collections.abc import Callable
+from dataclasses import dataclass
+
 from .encoding import decode_individual, calc_bit_len, generate_population
 from .ga_structure import GAIndividual, GAPopulation
-from .functions import get_function
+from .functions import get_function, validate_function
+from .selection import selection_select_parents, selection_select_ordered
+
+
+IMPLEMENTED_SELECTION= ("best", "worst", "natural", "tournament", "roulette")
 
 
 def evaluate_individual(individual: GAIndividual, ga_function, a, b):
@@ -14,20 +23,125 @@ def evaluate_population(population: GAPopulation, ga_function,a,b):
         evaluate_individual(ind, ga_function,a, b)
 
 
-def run_algorithm(u_params: dict)-> GAPopulation:
-    if not isinstance(u_params, dict):
-           raise TypeError("Invalid request parameters format.")
+@dataclass
+class GAConfig:
+    function: str
+    goal: str
+    dimensions: int
+    scope: tuple[float, float]
+    precision: float
+    population: int
+    epochs: int
+    selection_method: str
+    # size of the mating pool; None = as many as needed to refill the population
+    selection_count: int | None= None
+    tournament_size: int= 3
+    # rate is None when the operator is turned off
+    elitism_rate: float | None= None
+    # not applied yet - crossover, mutation and inversion are not implemented
+    crossover_method: str= "one_point"
+    crossover_rate: float= 0.8
+    mutation_rate: float= 0.2
+    inversion_rate: float | None= None
+    seed: int | None= None
 
-    f_params= u_params['function']
-    ga_options= u_params['options']
-    a,b = f_params['scope']
-    prec_k= f_params['precision']
-    dim= f_params['dimension']
-    population_s= ga_options['population']
-    ga_fun= get_function(f_params["name"], dim)
+    def __post_init__(self):
+        validate_function(self.function, self.dimensions)
+        a, b= self.scope
+        if a>= b: raise ValueError("Scope start must be lower than scope end.")
+        if self.goal not in ("min", "max"): raise ValueError(f"Unknown goal: {self.goal}")
+        if self.precision<= 0: raise ValueError("Precision must be positive.")
+        if self.population< 3: raise ValueError("Population must contain at least 3 individuals.")
+        if self.epochs< 1: raise ValueError("At least 1 epoch is required.")
+        if self.selection_count is not None and not 1<= self.selection_count<= self.population:
+            raise ValueError("Selection count must be between 1 and population size.")
+        if self.selection_method=="tournament" and not 3<= self.tournament_size<= self.population:
+            raise ValueError("Tournament size must be between 3 and population size.")
+        if self.elitism_rate is not None and not 0<= self.elitism_rate< 1:
+            raise ValueError("Elitism rate must be in [0, 1).")
+        for name in ("crossover_rate", "mutation_rate", "inversion_rate"):
+            rate= getattr(self, name)
+            if rate is not None and not 0<= rate<= 1: raise ValueError(f"{name} must be in [0, 1].")
 
-    m= calc_bit_len(a, b, prec_k)
-    pop = generate_population(population_s, m,dim)
-    evaluate_population(pop, ga_fun, a, b)
 
-    return pop
+@dataclass
+class EpochStats:
+    epoch: int
+    best_fitness: float
+    mean_fitness: float
+    worst_fitness: float
+    best_x: list[float]
+
+
+class GASimulation:
+    def __init__(self, config: GAConfig):
+        if config.selection_method not in IMPLEMENTED_SELECTION:
+            raise ValueError(f"Selection method not implemented: {config.selection_method}")
+
+        self.config= config
+        self.rng= random.Random(config.seed)
+        self.function= get_function(config.function, config.dimensions)
+        self.bit_len= calc_bit_len(*config.scope, config.precision)
+
+        elite= round((config.elitism_rate or 0)*config.population)
+        self.elite_count= min(elite, config.population-1)
+
+        self.population= generate_population(config.population, self.bit_len, config.dimensions, self.rng)
+        self._evaluate()
+        self.history: list[EpochStats]= [self._stats()]
+
+    @property
+    def epoch(self) -> int:
+        return self.population.generation
+
+    @property
+    def finished(self) -> bool:
+        return self.epoch>= self.config.epochs
+
+    @property
+    def best(self) -> GAIndividual:
+        return selection_select_ordered(self.population, "best", self.config.goal, 1)[0]
+
+    def decode(self, individual: GAIndividual) -> list[float]:
+        return decode_individual(individual, *self.config.scope)
+
+    def step(self) -> EpochStats:
+        if self.finished: raise RuntimeError("Simulation already finished.")
+        cfg= self.config
+
+        elite= [copy.deepcopy(ind) for ind in selection_select_ordered(self.population, "best", cfg.goal, self.elite_count)] if self.elite_count else []
+        children_count= cfg.population-len(elite)
+
+        pool= selection_select_parents(self.population, cfg.selection_method, cfg.selection_count or children_count,
+                                       cfg.goal, self.rng, cfg.tournament_size)
+        children= self._reproduce(pool, children_count)
+
+        self.population= GAPopulation(population=elite+children, generation=self.epoch+1)
+        self._evaluate()
+        stats= self._stats()
+        self.history.append(stats)
+        return stats
+
+    def run(self, on_epoch: Callable[[EpochStats], None] | None= None) -> list[EpochStats]:
+        while not self.finished:
+            stats= self.step()
+            if on_epoch: on_epoch(stats)
+        return self.history
+
+    def _reproduce(self, pool: list[GAIndividual], count: int) -> list[GAIndividual]:
+        # TODO: crossover, mutation and inversion - for now children are plain copies of the mating pool
+        return [copy.deepcopy(pool[i % len(pool)]) for i in range(count)]
+
+    def _evaluate(self):
+        evaluate_population(self.population, self.function, *self.config.scope)
+
+    def _stats(self) -> EpochStats:
+        scores= [ind.fitness_score for ind in self.population]
+        best= self.best
+        return EpochStats(
+            epoch=self.epoch,
+            best_fitness=best.fitness_score,
+            mean_fitness=sum(scores)/len(scores),
+            worst_fitness=max(scores) if self.config.goal=="min" else min(scores),
+            best_x=self.decode(best),
+        )
