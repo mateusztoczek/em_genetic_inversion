@@ -7,7 +7,7 @@ from .encoding import decode_individual, calc_bit_len, generate_population
 from .ga_structure import GAIndividual, GAPopulation
 from .functions import get_function, validate_function
 from .selection import selection_select_parents, selection_select_ordered
-
+from .operations import crossover_ind
 
 IMPLEMENTED_SELECTION= ("best", "worst", "natural", "tournament", "roulette")
 
@@ -135,10 +135,13 @@ class GASimulation:
         childs=[]
 
         while len(childs)<count:
-            parent1, parent2=self.rng.choices(pool,k=2)
+            p1, p2=self.rng.choices(pool,k=2)
+            ch1, ch2= crossover_ind(p1, p2,cfg.crossover_method,cfg.chromosome_mode,cfg.crossover_rate,self.rng)
+            childs.append(ch1)
+            childs.append(ch2)
 
         return childs         
-        # return [copy.deepcopy(pool[i % len(pool)]) for i in range(count)]
+
 
     def _evaluate(self):
         evaluate_population(self.population, self.function, *self.config.scope)
