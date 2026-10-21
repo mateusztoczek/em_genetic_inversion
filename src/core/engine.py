@@ -39,6 +39,7 @@ class GAConfig:
     # rate is None when the operator is turned off
     elitism_rate: float | None= None
     # not applied yet - crossover, mutation and inversion are not implemented
+    chromosome_mode: str= "separate"
     crossover_method: str= "one_point"
     crossover_rate: float= 0.8
     mutation_rate: float= 0.2
@@ -59,6 +60,7 @@ class GAConfig:
             raise ValueError("Tournament size must be between 3 and population size.")
         if self.elitism_rate is not None and not 0<= self.elitism_rate< 1:
             raise ValueError("Elitism rate must be in [0, 1).")
+        if self.chromosome_mode not in ("separate", "combined"): raise ValueError("Unknown operation mode")
         for name in ("crossover_rate", "mutation_rate", "inversion_rate"):
             rate= getattr(self, name)
             if rate is not None and not 0<= rate<= 1: raise ValueError(f"{name} must be in [0, 1].")
@@ -129,8 +131,14 @@ class GASimulation:
         return self.history
 
     def _reproduce(self, pool: list[GAIndividual], count: int) -> list[GAIndividual]:
-        # TODO: crossover, mutation and inversion - for now children are plain copies of the mating pool
-        return [copy.deepcopy(pool[i % len(pool)]) for i in range(count)]
+        cfg=self.config
+        childs=[]
+
+        while len(childs)<count:
+            parent1, parent2=self.rng.choices(pool,k=2)
+
+        return childs         
+        # return [copy.deepcopy(pool[i % len(pool)]) for i in range(count)]
 
     def _evaluate(self):
         evaluate_population(self.population, self.function, *self.config.scope)
