@@ -1,4 +1,6 @@
+import random
 from .ga_structure import GAIndividual
+from .crossover import crossover_apply
 
 
 def _chromosome_as_segments(ind: GAIndividual, ch_mode: str) -> list[list[int]]:
@@ -30,3 +32,22 @@ def _chromosome_as_ind(segments: list[list[int]], temp_chromosome: GAIndividual,
         
         return GAIndividual(chromosomes=ind_chromosomes)
     raise ValueError(f"Unknown chromosome mode: {ch_mode}")
+
+
+def crossover_ind(p1: GAIndividual, p2: GAIndividual, method: str, ch_mode: str, propability: float, rng: random.Random)-> tuple[GAIndividual, GAIndividual]:
+    segment1= _chromosome_as_segments(p1, ch_mode)
+    segment2= _chromosome_as_segments(p2, ch_mode)
+    ch1_segments=[]
+    ch2_segments=[]
+    for ch1,ch2 in zip(segment1, segment2, strict=True):
+        if rng.random()<propability: resp_ch1, resp_ch2= crossover_apply(ch1, ch2,method,rng)
+        else: 
+            resp_ch1= ch1.copy()
+            resp_ch2=ch2.copy()
+        ch1_segments.append(resp_ch1)
+        ch2_segments.append(resp_ch2)
+    final_ch1=_chromosome_as_ind(ch1_segments,p1,ch_mode)
+    final_ch2=_chromosome_as_ind(ch2_segments,p2,ch_mode)
+
+    return final_ch1, final_ch2
+        
