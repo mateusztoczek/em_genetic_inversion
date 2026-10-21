@@ -12,8 +12,8 @@ def calc_bit_len(a: float, b: float, precision: float) -> int:
 
 # TODO: change list of int to bitarray or smt to not waste memory on such stupid thing
 def generate_chromosome(m: int, rng: random.Random | None = None)-> list:
-    rng= rng or random
-    return [rng.randint(0,1) for _ in range(m)]
+    chr_rng= rng if rng is not None else random._inst
+    return [chr_rng.randint(0,1) for _ in range(m)]
 
 
 def generate_individual(m: int, dim: int, rng: random.Random | None = None) -> GAIndividual:

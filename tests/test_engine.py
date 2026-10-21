@@ -22,7 +22,7 @@ def test_evaluate_individual():
 
 
 def make_config(**overrides) -> GAConfig:
-    params= dict(
+    def_params= dict(
         function="mccormick",
         goal="min",
         dimensions=2,
@@ -33,8 +33,8 @@ def make_config(**overrides) -> GAConfig:
         selection_method="tournament",
         seed=1,
     )
-    params.update(overrides)
-    return GAConfig(**params)
+    def_params.update(overrides)
+    return GAConfig(**def_params) #type: ignore[arg-type]
 
 
 def test_initial_population():

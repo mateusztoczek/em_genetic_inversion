@@ -136,8 +136,9 @@ class GASimulation:
         evaluate_population(self.population, self.function, *self.config.scope)
 
     def _stats(self) -> EpochStats:
-        scores= [ind.fitness_score for ind in self.population]
         best= self.best
+        assert best.fitness_score is not None, "best individual doent have fittness score, must have one to run calculations"
+        scores= [ind.fitness_score for ind in self.population if ind.fitness_score is not None]
         return EpochStats(
             epoch=self.epoch,
             best_fitness=best.fitness_score,
