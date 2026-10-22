@@ -4,7 +4,7 @@ from src.core.encoding import calc_bit_len
 from src.ui.engine_mapping import selected_count, to_ga_config
 from src.ui.constants import (
     FUNCTIONS, CEC_DIMS, SELECTION_METHODS, RANK_METHODS, COPIES_FUNCTIONS, CROSSOVER_METHODS,
-    MUTATION_HARDCODED, INVERSION_PROBABILITY, ELITISM_RATE,
+    MUTATION_METHODS, CHROMOSOME_MODES,
 )
 
 
@@ -61,9 +61,19 @@ def build_config() -> dict:
             "probability": s.get("w_cx_probability", cx_old["probability"]),
             "uniform_swap": s.get("w_uniform_swap", cx_old["uniform_swap"]),
         },
-        "mutation": dict(old["mutation"]),
-        "inversion": {"enabled": s.get("w_inversion", old["inversion"]["enabled"]), "probability": INVERSION_PROBABILITY},
-        "elitism": {"enabled": s.get("w_elitism", old["elitism"]["enabled"]), "rate": ELITISM_RATE},
+        "chromosome_mode":s.get("w_chromosome_mode",old.get("chromosome_mode","separate")),
+        "mutation":{
+            "method":s.get("w_mutation_method",old["mutation"]["method"]),
+            "propability":s.get("w_mutation_propability",old["mutation"]["propability"])
+        },
+        "inversion":{
+            "enabled":s.get("w_inversion",old["inversion"]["enabled"]),
+            "propability":s.get("w_inversion_propability",old["inversion"]["propability"])
+        },
+        "elitism":{
+            "enabled":s.get("w_elitism",old["elitism"]["enabled"]),
+            "rate":s.get("w_elitism_percent",round(old["elitism"]["rate"]*100))/100
+        }        
     }
 
 
@@ -76,6 +86,7 @@ def save_config():
         return
     st.session_state.config_errors= []
     st.session_state.ga_config= cfg
+    st.session_state.pop("simulation",None)
     st.session_state.screen= "main"
 
 
@@ -90,6 +101,9 @@ def render_function_section(cfg: dict):
     seed("w_range_min", float(f["scope"][0]))
     seed("w_range_max", float(f["scope"][1]))
     seed("w_decimal_places", f["decimal_places"])
+    seed("w_chromosome_mode", cfg.get("chromosome_mode","separate"))
+
+    st.selectbox("Tryb operacji na chromosomach", list(CHROMOSOME_MODES), format_func=CHROMOSOME_MODES.get, key="w_chromosome_mode")
 
     col1, col2= st.columns(2)
     name= col1.selectbox("Funkcja celu", list(FUNCTIONS), format_func=FUNCTIONS.get, key="w_function")
@@ -181,22 +195,33 @@ def render_crossover_section(cfg: dict):
 
 
 def render_operators_section(cfg: dict):
+    elitism= cfg["elitism"]
+    mutation= cfg["mutation"]
+    inversion= cfg["inversion"]
+    
     st.subheader("Mutacja")
-    col1, col2= st.columns(2)
-    col1.text_input("Metoda mutacji", value=MUTATION_HARDCODED["method"], disabled=True)
-    col2.number_input("Prawdopodobieństwo mutacji", value=MUTATION_HARDCODED["probability"], disabled=True)
+    seed("w_mutation_method", mutation["method"])
+    seed("w_mutation_probability", mutation["probability"])
+
+    col1,col2 = st.columns(2)
+    col1.selectbox("Metoda mutacji", list(MUTATION_METHODS),format_func=MUTATION_METHODS.get,key="w_mutation_method",)
+    col2.slider("Prawdopodobieństwo mutacji",min_value=0.0,max_value=1.0,step=0.01,key="w_mutation_probability",)
 
     st.subheader("Inwersja")
-    seed("w_inversion", cfg["inversion"]["enabled"])
-    col1, col2= st.columns(2)
-    col1.toggle("Włącz inwersję", key="w_inversion")
-    col2.number_input("Prawdopodobieństwo inwersji", value=INVERSION_PROBABILITY, disabled=True)
+    seed("w_inversion", inversion["enabled"])
+    seed("w_inversion_probability", inversion["probability"])
+
+    col1,col2=st.columns(2)
+    col1.toggle("Możliwa inwersja", key="w_inversion",)
+    col2.slider("Prawdopodobieństwo inwersji",min_value=0.0,max_value=1.0,step=0.01,key="w_inversion_probability",disabled=not st.session_state.w_inversion,)
 
     st.subheader("Strategia elitarna")
-    seed("w_elitism", cfg["elitism"]["enabled"])
-    col1, col2= st.columns(2)
-    col1.toggle("Włącz strategię elitarną", key="w_elitism")
-    col2.number_input("Odsetek najlepszych osobników [%]", value=ELITISM_RATE*100, disabled=True)
+    seed("w_elitism",elitism["enabled"])
+    seed("w_elitism_percent", round(elitism["rate"]*100))
+
+    col1, col2 = st.columns(2)
+    col1.toggle("Włącz strategię elitarną",key="w_elitism",)
+    col2.slider("Odsetek najlepszych w procentach",min_value=0,max_value=99, step=1,key="w_elitism_percent",disabled=not st.session_state.w_elitism,)
 
 
 def render_config_screen():

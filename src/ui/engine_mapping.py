@@ -2,7 +2,7 @@ from src.core.engine import GAConfig
 
 
 def selected_count(percent: int, population: int) -> int:
-    return round(percent/100*population)
+    return max(1,round(percent/100*population))
 
 
 def to_ga_config(cfg: dict) -> GAConfig:
@@ -24,9 +24,11 @@ def to_ga_config(cfg: dict) -> GAConfig:
         selection_method=sel["method"],
         selection_count=selection_count,
         tournament_size=sel["tournament_size"],
+        chromosome_mode=cfg["chromosome_mode"],
         elitism_rate=cfg["elitism"]["rate"] if cfg["elitism"]["enabled"] else None,
         crossover_method=cfg["crossover"]["method"],
         crossover_rate=cfg["crossover"]["probability"],
+        mutation_method=cfg["mutation"]["method"],
         mutation_rate=cfg["mutation"]["probability"],
         inversion_rate=cfg["inversion"]["probability"] if cfg["inversion"]["enabled"] else None,
     )

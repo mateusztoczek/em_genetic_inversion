@@ -27,14 +27,20 @@ COPIES_FUNCTIONS= {
 CROSSOVER_METHODS= {
     "one_point": "Jednopunktowe",
     "two_point": "Dwupunktowe",
-    "three_point": "Trzypunktowe",
-    "uniform": "Jednorodne",
+    "uniform": "Jednorode",
+    "granular": "Ziarniste",
 }
 
-# not implemented yet - shown as read-only values
-MUTATION_HARDCODED= {"method": "Jednopunktowa", "probability": 0.2}
-INVERSION_PROBABILITY= 0.01
-ELITISM_RATE= 0.2
+CHROMOSOME_MODES={
+    "separate": "Osobne operacje dla każdej zmiennej",
+    "combined": "Połączone chromosomy"
+}
+
+MUTATION_METHODS={
+    "one_point": "Jednopunktowe",
+    "two_point": "Dwupunktowe",
+    "boundary": "Brzegowa"
+}
 
 DEFAULT_CONFIG= {
     "function": {
@@ -61,7 +67,8 @@ DEFAULT_CONFIG= {
         "probability": 0.8,
         "uniform_swap": 0.5,
     },
-    "mutation": {"method": "one_point", "probability": MUTATION_HARDCODED["probability"]},
-    "inversion": {"enabled": True, "probability": INVERSION_PROBABILITY},
-    "elitism": {"enabled": True, "rate": ELITISM_RATE},
+    "chromosome_mode": "separate",
+    "mutation": {"method": "one_point", "probability": 0.2},
+    "inversion": {"enabled": True, "probability": 0.2},
+    "elitism": {"enabled": True, "rate":0.2},
 }
