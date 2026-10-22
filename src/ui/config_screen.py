@@ -189,10 +189,7 @@ def render_crossover_section(cfg: dict):
     method= col1.selectbox("Metoda krzyżowania", list(CROSSOVER_METHODS), format_func=CROSSOVER_METHODS.get, key="w_cx_method")
     col2.slider("Prawdopodobieństwo krzyżowania", 0.0, 1.0, step=0.01, key="w_cx_probability")
 
-    if method== "uniform":
-        seed("w_uniform_swap", cx["uniform_swap"])
-        st.slider("Prawdopodobieństwo zamiany genu", 0.0, 1.0, step=0.01, key="w_uniform_swap")
-
+    if method== "uniform": seed("w_uniform_swap", cx["uniform_swap"])
 
 def render_operators_section(cfg: dict):
     elitism= cfg["elitism"]
@@ -201,19 +198,19 @@ def render_operators_section(cfg: dict):
     
     st.subheader("Mutacja")
     seed("w_mutation_method", mutation["method"])
-    seed("w_mutation_probability", mutation["probability"])
+    seed("w_mutation_propability", mutation["propability"])
 
     col1,col2 = st.columns(2)
     col1.selectbox("Metoda mutacji", list(MUTATION_METHODS),format_func=MUTATION_METHODS.get,key="w_mutation_method",)
-    col2.slider("Prawdopodobieństwo mutacji",min_value=0.0,max_value=1.0,step=0.01,key="w_mutation_probability",)
+    col2.slider("Prawdopodobieństwo mutacji",min_value=0.0,max_value=1.0,step=0.01,key="w_mutation_propability",)
 
     st.subheader("Inwersja")
     seed("w_inversion", inversion["enabled"])
-    seed("w_inversion_probability", inversion["probability"])
+    seed("w_inversion_propability", inversion["propability"])
 
     col1,col2=st.columns(2)
     col1.toggle("Możliwa inwersja", key="w_inversion",)
-    col2.slider("Prawdopodobieństwo inwersji",min_value=0.0,max_value=1.0,step=0.01,key="w_inversion_probability",disabled=not st.session_state.w_inversion,)
+    col2.slider("Prawdopodobieństwo inwersji",min_value=0.0,max_value=1.0,step=0.01,key="w_inversion_propability",disabled=not st.session_state.w_inversion,)
 
     st.subheader("Strategia elitarna")
     seed("w_elitism",elitism["enabled"])

@@ -25,10 +25,9 @@ def render_main_screen():
             + (f" ({sel[sel['method']+'_percent']}%)" if sel["method"] in ("best", "worst") else "")
             + f"  \n**Krzyżowanie:** {CROSSOVER_METHODS[cx['method']]}, p={cx['probability']}  \n"
             f"**Inwersja:** {'wł.' if cfg['inversion']['enabled'] else 'wył.'}, "
-            f"**elitaryzm:** {'wł.' if cfg['elitism']['enabled'] else 'wył.'}"
+            f"**elitaryzm:** {'wł.' if cfg['elitism']['enabled'] else 'wył.'}\n"
             f"**Tryb chromosomów:** {CHROMOSOME_MODES[ch_mode]}  \n"
-            f"**Mutacja:** {MUTATION_METHODS[mut['method']]}, "
-            f"p={mut['probability']}  \n"
+            f"**Mutacja:** {MUTATION_METHODS[mut['method']]}, p={mut['propability']}  \n"
         )
 
     col1, col2= st.columns(2)
@@ -39,4 +38,11 @@ def render_main_screen():
             s=GASimulation(ga_config)
             s.run()
             st.session_state["simulation"]=s
-        except ValueError as e: st.error(f"Error config: {e}")
+        except Exception as e: st.exception(e)
+        #except ValueError as e: st.error(f"Error config: {e}")
+    if "simulation" in st.session_state:
+        s= st.session_state["simulation"]
+        best= min(s.history,key=lambda x: x.best_fitness) if s.config.goal== "min" else max(s.history,key=lambda x: x.best_fitness)
+        st.metric("best fit score", f"{best.best_fitness:.6f}")
+        st.write("best found at:", best.best_x)
+        st.write("last epoch:", best.epoch)

@@ -1,12 +1,11 @@
 import random
 
 
-def crossover_twopoint(a,b,rng):
-    if len(a)<3: raise ValueError("Two points crossover operation requires 3 bits minimum")
-    p,q= sorted(rng.sample(range))
+def crossover_twopoint(ch1, ch2, rng):
+    if len(ch1)!= len(ch2) or len(ch1) < 3: raise ValueError("Invalid chromosome lengths.")
+    p,q =sorted(rng.sample(range(1,len(ch1)), k=2))
 
-    return (a[:p]+b[p:q]+a[q:], b[:p],a[p:q]+b[q:])
-
+    return (ch1[:p] + ch2[p:q] + ch1[q:], ch2[:p] + ch1[p:q] + ch2[q:])
 
 def crossover_onepoint(a,b,rng):
     if len(a)<2: raise ValueError("One points crossover requires 2 bits minimum")

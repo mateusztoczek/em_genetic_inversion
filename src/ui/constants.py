@@ -68,7 +68,7 @@ DEFAULT_CONFIG= {
         "uniform_swap": 0.5,
     },
     "chromosome_mode": "separate",
-    "mutation": {"method": "one_point", "probability": 0.2},
-    "inversion": {"enabled": True, "probability": 0.2},
+    "mutation": {"method": "one_point", "propability": 0.2},
+    "inversion": {"enabled": True, "propability": 0.2},
     "elitism": {"enabled": True, "rate":0.2},
 }
