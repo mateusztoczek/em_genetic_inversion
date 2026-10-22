@@ -2,7 +2,7 @@ import copy
 import random
 from collections.abc import Callable
 from dataclasses import dataclass
-
+from statistics import pstdev
 from .encoding import decode_individual, calc_bit_len, generate_population
 from .ga_structure import GAIndividual, GAPopulation
 from .functions import get_function, validate_function
@@ -73,6 +73,7 @@ class EpochStats:
     best_fitness: float
     mean_fitness: float
     worst_fitness: float
+    std_fitness: float
     best_x: list[float]
 
 
@@ -160,5 +161,6 @@ class GASimulation:
             best_fitness=best.fitness_score,
             mean_fitness=sum(scores)/len(scores),
             worst_fitness=max(scores) if self.config.goal=="min" else min(scores),
+            std_fitness=pstdev(scores),
             best_x=self.decode(best),
         )
