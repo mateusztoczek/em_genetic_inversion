@@ -1,5 +1,5 @@
 import streamlit as st
-
+import pandas as pd
 from src.ui.config_screen import open_config
 from src.ui.constants import FUNCTIONS, SELECTION_METHODS, CROSSOVER_METHODS, MUTATION_METHODS, CHROMOSOME_MODES
 from .engine_mapping import to_ga_config
@@ -41,8 +41,26 @@ def render_main_screen():
         except Exception as e: st.exception(e)
         #except ValueError as e: st.error(f"Error config: {e}")
     if "simulation" in st.session_state:
-        s= st.session_state["simulation"]
-        best= min(s.history,key=lambda x: x.best_fitness) if s.config.goal== "min" else max(s.history,key=lambda x: x.best_fitness)
-        st.metric("best fit score", f"{best.best_fitness:.6f}")
-        st.write("best found at:", best.best_x)
-        st.write("last epoch:", best.epoch)
+        s = st.session_state["simulation"]
+
+        best= (min(s.history, key=lambda stat: stat.best_fitness)if s.config.goal == "min" else max(s.history, key=lambda stat: stat.best_fitness))
+
+        st.metric("best fitness", f"{best.best_fitness:.6f}")
+        st.write("best x:", [f"{x:.6f}" for x in best.best_x])
+        st.write("found optimum in epoch:", best.epoch)
+        st.write("all epoch:", s.epoch)
+
+        df= pd.DataFrame([{
+                "Epoka": stat.epoch,
+                "Najlepszy": stat.best_fitness,
+                "Średni": stat.mean_fitness,
+                "Odchylenie standardowe": stat.std_fitness,
+                "Unikalne osobniki": stat.u_genotype,
+            }for stat in s.history])
+        
+        st.subheader("Poptimus")
+        st.line_chart(df, x="Epoka", y=["Najlepszy", "Średni"])
+        st.subheader("std fitness")
+        st.line_chart(df, x="Epoka", y="Odchylenie standardowe")
+        st.subheader("gen variaty")
+        st.line_chart(df, x="Epoka", y="Unikalne osobniki")

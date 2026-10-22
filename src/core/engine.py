@@ -75,6 +75,7 @@ class EpochStats:
     worst_fitness: float
     std_fitness: float
     best_x: list[float]
+    u_genotype: int
 
 
 class GASimulation:
@@ -156,6 +157,7 @@ class GASimulation:
         best= self.best
         assert best.fitness_score is not None, "best individual doent have fittness score, must have one to run calculations"
         scores= [ind.fitness_score for ind in self.population if ind.fitness_score is not None]
+        u_genotypes= len({tuple(tuple(ch) for ch in ind.chromosomes)for ind in self.population})
         return EpochStats(
             epoch=self.epoch,
             best_fitness=best.fitness_score,
@@ -163,4 +165,5 @@ class GASimulation:
             worst_fitness=max(scores) if self.config.goal=="min" else min(scores),
             std_fitness=pstdev(scores),
             best_x=self.decode(best),
+            u_genotype=u_genotypes
         )
