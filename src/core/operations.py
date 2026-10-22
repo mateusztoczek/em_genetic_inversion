@@ -2,7 +2,7 @@ import random
 from .ga_structure import GAIndividual
 from .crossover import crossover_apply
 from .mutation import mutation_apply
-
+from .inversion import inversion_apply
 
 def _chromosome_as_segments(ind: GAIndividual, ch_mode: str) -> list[list[int]]:
     if ch_mode=='separate': return [chrom.copy() for chrom in ind.chromosomes]
@@ -58,6 +58,17 @@ def mutation_ind(ind: GAIndividual, method: str, ch_mode: str, propability: floa
     resp_target=[]
     for ch in segment:
         if rng.random()<propability: resp_ch=mutation_apply(ch, method, rng)
+        else: resp_ch= ch.copy()
+        resp_target.append(resp_ch)
+
+    return _chromosome_as_ind(resp_target,ind,ch_mode)
+
+
+def inversion_ind(ind: GAIndividual, ch_mode: str, propability: float, rng: random.Random)-> GAIndividual:
+    segment= _chromosome_as_segments(ind,ch_mode)
+    resp_target=[]
+    for ch in segment:
+        if rng.random()<propability: resp_ch=inversion_apply(ch, rng)
         else: resp_ch= ch.copy()
         resp_target.append(resp_ch)
 

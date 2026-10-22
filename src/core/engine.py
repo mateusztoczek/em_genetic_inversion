@@ -7,7 +7,7 @@ from .encoding import decode_individual, calc_bit_len, generate_population
 from .ga_structure import GAIndividual, GAPopulation
 from .functions import get_function, validate_function
 from .selection import selection_select_parents, selection_select_ordered
-from .operations import crossover_ind, mutation_ind
+from .operations import crossover_ind, mutation_ind, inversion_ind
 
 IMPLEMENTED_SELECTION= ("best", "worst", "natural", "tournament", "roulette")
 
@@ -141,6 +141,7 @@ class GASimulation:
             
             for ch in (ch1,ch2):
                 ch=mutation_ind(ch,cfg.mutation_method, cfg.chromosome_mode, cfg.mutation_rate, self.rng)
+                if cfg.inversion_rate is not None: ch= inversion_ind(ch, cfg.chromosome_mode, cfg.inversion_rate, self.rng)
                 childs.append(ch)
                 if len(childs)==count: break
 
