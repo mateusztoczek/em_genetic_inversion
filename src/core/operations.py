@@ -1,6 +1,7 @@
 import random
 from .ga_structure import GAIndividual
 from .crossover import crossover_apply
+from .mutation import mutation_apply
 
 
 def _chromosome_as_segments(ind: GAIndividual, ch_mode: str) -> list[list[int]]:
@@ -50,4 +51,14 @@ def crossover_ind(p1: GAIndividual, p2: GAIndividual, method: str, ch_mode: str,
     final_ch2=_chromosome_as_ind(ch2_segments,p2,ch_mode)
 
     return final_ch1, final_ch2
-        
+
+
+def mutation_ind(ind: GAIndividual, method: str, ch_mode: str, propability: float, rng: random.Random)-> GAIndividual:
+    segment= _chromosome_as_segments(ind,ch_mode)
+    resp_target=[]
+    for ch in segment:
+        if rng.random()<propability: resp_ch=mutation_apply(ch, method, rng)
+        else: resp_ch= ch.copy()
+        resp_target.append(resp_ch)
+
+    return _chromosome_as_ind(resp_target,ind,ch_mode)

@@ -7,7 +7,7 @@ from .encoding import decode_individual, calc_bit_len, generate_population
 from .ga_structure import GAIndividual, GAPopulation
 from .functions import get_function, validate_function
 from .selection import selection_select_parents, selection_select_ordered
-from .operations import crossover_ind
+from .operations import crossover_ind, mutation_ind
 
 IMPLEMENTED_SELECTION= ("best", "worst", "natural", "tournament", "roulette")
 
@@ -42,6 +42,7 @@ class GAConfig:
     chromosome_mode: str= "separate"
     crossover_method: str= "one_point"
     crossover_rate: float= 0.8
+    mutation_method: str= 'one_point'
     mutation_rate: float= 0.2
     inversion_rate: float | None= None
     seed: int | None= None
@@ -137,8 +138,11 @@ class GASimulation:
         while len(childs)<count:
             p1, p2=self.rng.choices(pool,k=2)
             ch1, ch2= crossover_ind(p1, p2,cfg.crossover_method,cfg.chromosome_mode,cfg.crossover_rate,self.rng)
-            childs.append(ch1)
-            childs.append(ch2)
+            
+            for ch in (ch1,ch2):
+                ch=mutation_ind(ch,cfg.mutation_method, cfg.chromosome_mode, cfg.mutation_rate, self.rng)
+                childs.append(ch)
+                if len(childs)==count: break
 
         return childs         
 
