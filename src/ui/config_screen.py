@@ -3,7 +3,7 @@ import streamlit as st
 from src.core.encoding import calc_bit_len
 from src.ui.engine_mapping import selected_count, to_ga_config
 from src.ui.constants import (
-    FUNCTIONS, CEC_DIMS, SELECTION_METHODS, RANK_METHODS, COPIES_FUNCTIONS, CROSSOVER_METHODS,
+    FUNCTIONS, DEFAULT_FUNCTION_CONFIG, CEC_DIMS, SELECTION_METHODS, RANK_METHODS, COPIES_FUNCTIONS, CROSSOVER_METHODS,
     MUTATION_METHODS, CHROMOSOME_MODES,
 )
 
@@ -12,6 +12,20 @@ def seed(key: str, value):
     # widget keys get dropped by streamlit when the widget is not rendered, so refill them from saved config
     if key not in st.session_state:
         st.session_state[key]= value
+
+
+def apply_function_defaults():
+    s= st.session_state
+    n = s["w_function"]
+    funcdef= DEFAULT_FUNCTION_CONFIG[n]
+
+    s["w_goal"] = funcdef["goal"]
+    s["w_range_min"]=funcdef["scope"][0]
+    s["w_range_max"]=funcdef["scope"][1]
+    s["w_decimal_places"]=funcdef["decimal_places"]
+    dim =funcdef["dimensions"]
+    s["w_dim"]= dim
+    s["w_dim_cec"]= dim if dim in CEC_DIMS else CEC_DIMS[0]
 
 
 def open_config():
@@ -106,7 +120,8 @@ def render_function_section(cfg: dict):
     st.selectbox("Tryb operacji na chromosomach", list(CHROMOSOME_MODES), format_func=CHROMOSOME_MODES.get, key="w_chromosome_mode")
 
     col1, col2= st.columns(2)
-    name= col1.selectbox("Funkcja celu", list(FUNCTIONS), format_func=FUNCTIONS.get, key="w_function")
+    #name= col1.selectbox("Funkcja celu", list(FUNCTIONS), format_func=FUNCTIONS.get, key="w_function")
+    name= col1.selectbox("Funkcja celu", list(FUNCTIONS), format_func=FUNCTIONS.get, key="w_function", on_change=apply_function_defaults)    
     col2.radio("Cel", ["min", "max"], horizontal=True, key="w_goal")
 
     if name== "mccormick":

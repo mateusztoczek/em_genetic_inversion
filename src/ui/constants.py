@@ -3,6 +3,28 @@ FUNCTIONS= {
     "rastigin": "Rastrigin",
     "cec2014_f9": "CEC 2014 F9",
 }
+
+DEFAULT_FUNCTION_CONFIG={
+    "rastigin":{
+        "goal":"min",
+        "dimensions": 2,
+        "scope":[-5.12,5.12],
+        "decimal_places":4
+    },
+    "mccormick":{
+        "goal":"min",
+        "dimensions": 2,
+        "scope":[-3,4],
+        "decimal_places":4
+    },
+    "cec2014_f9":{
+        "goal":"min",
+        "dimensions": 10,
+        "scope":[-100.0,100.0],
+        "decimal_places":4
+    }
+}
+
 CEC_DIMS= [10, 20, 30, 100]
 
 SELECTION_METHODS= {
@@ -45,10 +67,7 @@ MUTATION_METHODS={
 DEFAULT_CONFIG= {
     "function": {
         "name": "rastigin",
-        "goal": "min",
-        "dimensions": 2,
-        "scope": [-5.12, 5.12],
-        "decimal_places": 4,
+        **DEFAULT_FUNCTION_CONFIG["rastigin"]
     },
     "population": 20,
     "epochs": 1000,
