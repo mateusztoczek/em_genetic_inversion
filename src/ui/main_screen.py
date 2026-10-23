@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from time import perf_counter
 from src.ui.config_screen import open_config
 from src.ui.constants import FUNCTIONS, SELECTION_METHODS, CROSSOVER_METHODS, MUTATION_METHODS, CHROMOSOME_MODES
 from .engine_mapping import to_ga_config
@@ -41,9 +42,12 @@ def render_main_screen():
         try: 
             ga_config=to_ga_config(cfg)
             with st.spinner("myślenie..."):
+                start=perf_counter()
                 s=GASimulation(ga_config)
                 s.run()
+                sim_time= perf_counter()-start
             st.session_state["simulation"]=s
+            st.session_state["simulation_time"]=sim_time
         except Exception as e: st.exception(e)
         #except ValueError as e: st.error(f"Error config: {e}")
     if "simulation" in st.session_state:
@@ -52,6 +56,7 @@ def render_main_screen():
         best= (min(s.history, key=lambda stat: stat.best_fitness)if s.config.goal == "min" else max(s.history, key=lambda stat: stat.best_fitness))
         st.subheader("Wyniki")
         st.metric("Najlepsza otrzyman wartość:", f"{best.best_fitness:.6f}")
+        st.metric("Czas obliczeń:", f"{st.session_state['simulation_time']:.2f} s")
         st.write("Najlepsze rozwiązanie:",", ".join(f"x{i} = {x:.6f}" for i, x in enumerate(best.best_x, start=1)))
         st.write("Najlepszy wynik w epoce:", best.epoch)
         st.write("Łączna liczba epok:", s.epoch)
