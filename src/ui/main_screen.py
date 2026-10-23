@@ -18,17 +18,18 @@ def render_main_screen():
     with st.container(border=True):
         g= "Minimalizacja" if f["goal"] == "min" else "Maksymalizacja"
         st.markdown(
+            f"**Tryb operacji na chromosomach:** {CHROMOSOME_MODES[ch_mode]}  \n"
             f"**Funkcja celu:** {FUNCTIONS[f['name']]}  \n"
             f"&emsp;**Cel:** {g}  \n"
             f"&emsp;**Liczba wymiarów:** {f['dimensions']}  \n"
             f"&emsp;**Zakres:** [{f['scope'][0]}, {f['scope'][1]}]  \n"
             f"&emsp;**Precyzja:** {f['decimal_places']} miejsc  \n"
-            f"**Populacja:** {cfg['population']}  \n"
             f"**Liczba epok:** {cfg['epochs']}  \n"
+            f"**Populacja:** {cfg['population']}  \n"
             f"**Selekcja:** {SELECTION_METHODS[sel['method']]}"
             + (f" (rozmiar turnieju {sel['tournament_size']})" if sel["method"]== "tournament" else "")
             + (f" ({sel[sel['method']+'_percent']}%)" if sel["method"] in ("best", "worst") else "")
-            + f"  \n**Krzyżowanie:** {CROSSOVER_METHODS[cx['method']]}, p={cx['probability']}  \n"
+            + f"  \n**Krzyżowanie:** {CROSSOVER_METHODS[cx['method']]} | p={cx['probability']}  \n"
             + f"**Mutacja:** {MUTATION_METHODS[mut['method']]} | p={mut['propability']}  \n"
             + f"**Inwersja:** {'włączona' if cfg['inversion']['enabled'] else 'wyłączona'}"
             + (f" | p={cfg['inversion']['propability']}" if cfg['inversion']['enabled'] else "")
