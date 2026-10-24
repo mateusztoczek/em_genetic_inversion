@@ -3,7 +3,7 @@ import streamlit as st
 from src.core.encoding import calc_bit_len
 from src.ui.engine_mapping import selected_count, to_ga_config
 from src.ui.constants import (
-    FUNCTIONS, DEFAULT_FUNCTION_CONFIG, CEC_DIMS, SELECTION_METHODS, RANK_METHODS, COPIES_FUNCTIONS, CROSSOVER_METHODS,
+    FUNCTIONS, DEFAULT_FUNCTION_CONFIG, CEC_DIMS, SELECTION_METHODS, CROSSOVER_METHODS,
     MUTATION_METHODS, CHROMOSOME_MODES,
 )
 
@@ -65,10 +65,6 @@ def build_config() -> dict:
             "best_percent": s.get("w_best_percent", sel_old["best_percent"]),
             "worst_percent": s.get("w_worst_percent", sel_old["worst_percent"]),
             "tournament_size": s.get("w_tournament_size", sel_old["tournament_size"]),
-            "rank_method": s.get("w_rank_method", sel_old["rank_method"]),
-            "copies_function": s.get("w_copies_function", sel_old["copies_function"]),
-            "max_copies": s.get("w_max_copies", sel_old["max_copies"]),
-            "exp_base": s.get("w_exp_base", sel_old["exp_base"]),
         },
         "crossover": {
             "method": s.get("w_cx_method", cx_old["method"]),
@@ -78,11 +74,11 @@ def build_config() -> dict:
         "chromosome_mode":s.get("w_chromosome_mode",old.get("chromosome_mode","separate")),
         "mutation":{
             "method":s.get("w_mutation_method",old["mutation"]["method"]),
-            "propability":s.get("w_mutation_propability",old["mutation"]["propability"])
+            "probability":s.get("w_mutation_probability",old["mutation"]["probability"])
         },
         "inversion":{
             "enabled":s.get("w_inversion",old["inversion"]["enabled"]),
-            "propability":s.get("w_inversion_propability",old["inversion"]["propability"])
+            "probability":s.get("w_inversion_probability",old["inversion"]["probability"])
         },
         "elitism":{
             "enabled":s.get("w_elitism",old["elitism"]["enabled"]),
@@ -173,29 +169,10 @@ def render_selection_section(cfg: dict):
         seed("w_tournament_size", sel["tournament_size"])
         st.number_input("Rozmiar turnieju", min_value=3, step=1, key="w_tournament_size")
 
-    if method== "ranking":
-        st.warning("Selekcja rankingowa nie jest jeszcze zaimplementowana w silniku, ale jej parametry już się zapisują.")
-        seed("w_rank_method", sel["rank_method"])
-        seed("w_copies_function", sel["copies_function"])
-        seed("w_max_copies", sel["max_copies"])
-        seed("w_exp_base", sel["exp_base"])
-
-        st.selectbox("Sposób nadawania rang (1 = najlepszy)", list(RANK_METHODS), format_func=RANK_METHODS.get, key="w_rank_method")
-        col1, col2= st.columns(2)
-        copies_fn= col1.selectbox("Funkcja liczby kopii", list(COPIES_FUNCTIONS), format_func=COPIES_FUNCTIONS.get, key="w_copies_function")
-        col2.number_input("Maks. liczba kopii (c_max)", min_value=1, step=1, key="w_max_copies")
-
-        if copies_fn== "linear":
-            st.latex(r"k(r) = \mathrm{round}\left(c_{max} \cdot \frac{N - r + 1}{N}\right)")
-        else:
-            st.number_input("Podstawa q", min_value=0.01, max_value=0.99, step=0.01, key="w_exp_base")
-            st.latex(r"k(r) = \mathrm{round}\left(c_{max} \cdot q^{\,r-1}\right)")
-
 
 def render_crossover_section(cfg: dict):
     cx= cfg["crossover"]
     st.subheader("Krzyżowanie")
-    st.caption("Krzyżowanie nie jest jeszcze zaimplementowane w silniku.")
 
     seed("w_cx_method", cx["method"])
     seed("w_cx_probability", cx["probability"])
@@ -213,19 +190,19 @@ def render_operators_section(cfg: dict):
     
     st.subheader("Mutacja")
     seed("w_mutation_method", mutation["method"])
-    seed("w_mutation_propability", mutation["propability"])
+    seed("w_mutation_probability", mutation["probability"])
 
     col1,col2 = st.columns(2)
     col1.selectbox("Metoda mutacji", list(MUTATION_METHODS),format_func=MUTATION_METHODS.get,key="w_mutation_method",)
-    col2.slider("Prawdopodobieństwo mutacji",min_value=0.0,max_value=1.0,step=0.01,key="w_mutation_propability",)
+    col2.slider("Prawdopodobieństwo mutacji",min_value=0.0,max_value=1.0,step=0.01,key="w_mutation_probability",)
 
     st.subheader("Inwersja")
     seed("w_inversion", inversion["enabled"])
-    seed("w_inversion_propability", inversion["propability"])
+    seed("w_inversion_probability", inversion["probability"])
 
     col1,col2=st.columns(2)
     col1.toggle("Możliwa inwersja", key="w_inversion",)
-    col2.slider("Prawdopodobieństwo inwersji",min_value=0.0,max_value=1.0,step=0.01,key="w_inversion_propability",disabled=not st.session_state.w_inversion,)
+    col2.slider("Prawdopodobieństwo inwersji",min_value=0.0,max_value=1.0,step=0.01,key="w_inversion_probability",disabled=not st.session_state.w_inversion,)
 
     st.subheader("Strategia elitarna")
     seed("w_elitism",elitism["enabled"])

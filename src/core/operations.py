@@ -35,13 +35,13 @@ def _chromosome_as_ind(segments: list[list[int]], temp_chromosome: GAIndividual,
     raise ValueError(f"Unknown chromosome mode: {ch_mode}")
 
 
-def crossover_ind(p1: GAIndividual, p2: GAIndividual, method: str, ch_mode: str, propability: float, rng: random.Random)-> tuple[GAIndividual, GAIndividual]:
+def crossover_ind(p1: GAIndividual, p2: GAIndividual, method: str, ch_mode: str, probability: float, rng: random.Random)-> tuple[GAIndividual, GAIndividual]:
     segment1= _chromosome_as_segments(p1, ch_mode)
     segment2= _chromosome_as_segments(p2, ch_mode)
     ch1_segments=[]
     ch2_segments=[]
     for ch1,ch2 in zip(segment1, segment2, strict=True):
-        if rng.random()<propability: resp_ch1, resp_ch2= crossover_apply(ch1, ch2,method,rng)
+        if rng.random()<probability: resp_ch1, resp_ch2= crossover_apply(ch1, ch2,method,rng)
         else: 
             resp_ch1= ch1.copy()
             resp_ch2=ch2.copy()
@@ -53,22 +53,22 @@ def crossover_ind(p1: GAIndividual, p2: GAIndividual, method: str, ch_mode: str,
     return final_ch1, final_ch2
 
 
-def mutation_ind(ind: GAIndividual, method: str, ch_mode: str, propability: float, rng: random.Random)-> GAIndividual:
+def mutation_ind(ind: GAIndividual, method: str, ch_mode: str, probability: float, rng: random.Random)-> GAIndividual:
     segment= _chromosome_as_segments(ind,ch_mode)
     resp_target=[]
     for ch in segment:
-        if rng.random()<propability: resp_ch=mutation_apply(ch, method, rng)
+        if rng.random()<probability: resp_ch=mutation_apply(ch, method, rng)
         else: resp_ch= ch.copy()
         resp_target.append(resp_ch)
 
     return _chromosome_as_ind(resp_target,ind,ch_mode)
 
 
-def inversion_ind(ind: GAIndividual, ch_mode: str, propability: float, rng: random.Random)-> GAIndividual:
+def inversion_ind(ind: GAIndividual, ch_mode: str, probability: float, rng: random.Random)-> GAIndividual:
     segment= _chromosome_as_segments(ind,ch_mode)
     resp_target=[]
     for ch in segment:
-        if rng.random()<propability: resp_ch=inversion_apply(ch, rng)
+        if rng.random()<probability: resp_ch=inversion_apply(ch, rng)
         else: resp_ch= ch.copy()
         resp_target.append(resp_ch)
 

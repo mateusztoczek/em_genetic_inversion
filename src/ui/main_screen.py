@@ -1,10 +1,8 @@
 import streamlit as st
 import pandas as pd
-from time import perf_counter
 from src.ui.config_screen import open_config
 from src.ui.constants import FUNCTIONS, SELECTION_METHODS, CROSSOVER_METHODS, MUTATION_METHODS, CHROMOSOME_MODES
 from .engine_mapping import to_ga_config
-from src.core.engine import GASimulation
 from src.core.storage import run_with_recording, DEFAULT_DB_PATH
 
 def render_main_screen():
@@ -31,26 +29,24 @@ def render_main_screen():
             + (f" (rozmiar turnieju {sel['tournament_size']})" if sel["method"]== "tournament" else "")
             + (f" ({sel[sel['method']+'_percent']}%)" if sel["method"] in ("best", "worst") else "")
             + f"  \n**Krzyżowanie:** {CROSSOVER_METHODS[cx['method']]} | p={cx['probability']}  \n"
-            + f"**Mutacja:** {MUTATION_METHODS[mut['method']]} | p={mut['propability']}  \n"
+            + f"**Mutacja:** {MUTATION_METHODS[mut['method']]} | p={mut['probability']}  \n"
             + f"**Inwersja:** {'włączona' if cfg['inversion']['enabled'] else 'wyłączona'}"
-            + (f" | p={cfg['inversion']['propability']}" if cfg['inversion']['enabled'] else "")
+            + (f" | p={cfg['inversion']['probability']}" if cfg['inversion']['enabled'] else "")
             + f"  \n**Elityzm:** {'włączony' if cfg['elitism']['enabled'] else 'wyłączony'}"
             + (f" | {cfg['elitism']['rate'] * 100:g}%" if cfg['elitism']['enabled'] else "")
         )
 
+    st.checkbox("Zapisuj do bazy wszystkich osobników z każdej epoki (bardzo zwiększa rozmiar bazy)", key="save_individuals")
     col1, col2= st.columns(2)
     col1.button("Konfiguracja", width="stretch", on_click=open_config)
     if col2.button("Wykonaj", type="primary", width="stretch"):
         try: 
             ga_config=to_ga_config(cfg)
             with st.spinner("myślenie..."):
-                start=perf_counter()
-                s=GASimulation(ga_config)
-                run_id=run_with_recording(s)
-                sim_time= perf_counter()-start
-            st.session_state["simulation"]=s
-            st.session_state["simulation_time"]=sim_time
-            st.session_state["run_id"]=run_id
+                rec=run_with_recording(ga_config, save_individuals=st.session_state.get("save_individuals", False))
+            st.session_state["simulation"]=rec.sim
+            st.session_state["simulation_time"]=rec.compute_time
+            st.session_state["run_id"]=rec.run_id
         except Exception as e: st.exception(e)
         #except ValueError as e: st.error(f"Error config: {e}")
     if "simulation" in st.session_state:

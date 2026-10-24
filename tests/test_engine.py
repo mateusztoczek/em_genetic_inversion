@@ -119,5 +119,5 @@ def test_invalid_config(overrides):
     with pytest.raises(ValueError): make_config(**overrides)
 
 
-def test_ranking_not_implemented():
+def test_unknown_selection_rejected():
     with pytest.raises(ValueError): GASimulation(make_config(selection_method="ranking"))

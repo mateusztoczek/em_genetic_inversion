@@ -1,12 +1,12 @@
 FUNCTIONS= {
     "mccormick": "McCormick (2D)",
     "mccormick_neg": "−McCormick (2D, maksymalizacja)",
-    "rastigin": "Rastrigin",
+    "rastrigin": "Rastrigin",
     "cec2014_f9": "CEC 2014 F9",
 }
 
 DEFAULT_FUNCTION_CONFIG={
-    "rastigin":{
+    "rastrigin":{
         "goal":"min",
         "dimensions": 2,
         "scope":[-5.12,5.12],
@@ -40,17 +40,6 @@ SELECTION_METHODS= {
     "natural": "Naturalna (losowa)",
     "tournament": "Turniejowa",
     "roulette": "Ruletkowa",
-    "ranking": "Rankingowa (niezaimplementowana)",
-}
-RANK_METHODS= {
-    "ordinal": "Kolejne (1, 2, 3, 4)",
-    "average": "Średnia przy remisach (1, 2.5, 2.5, 4)",
-    "min": "Minimalna przy remisach (1, 2, 2, 4)",
-    "dense": "Gęsta (1, 2, 2, 3)",
-}
-COPIES_FUNCTIONS= {
-    "linear": "Liniowa",
-    "exponential": "Wykładnicza",
 }
 
 CROSSOVER_METHODS= {
@@ -73,8 +62,8 @@ MUTATION_METHODS={
 
 DEFAULT_CONFIG= {
     "function": {
-        "name": "rastigin",
-        **DEFAULT_FUNCTION_CONFIG["rastigin"]
+        "name": "rastrigin",
+        **DEFAULT_FUNCTION_CONFIG["rastrigin"]
     },
     "population": 20,
     "epochs": 1000,
@@ -83,10 +72,6 @@ DEFAULT_CONFIG= {
         "best_percent": 50,
         "worst_percent": 50,
         "tournament_size": 3,
-        "rank_method": "ordinal",
-        "copies_function": "linear",
-        "max_copies": 2,
-        "exp_base": 0.9,
     },
     "crossover": {
         "method": "one_point",
@@ -94,7 +79,7 @@ DEFAULT_CONFIG= {
         "uniform_swap": 0.5,
     },
     "chromosome_mode": "separate",
-    "mutation": {"method": "one_point", "propability": 0.2},
-    "inversion": {"enabled": True, "propability": 0.2},
+    "mutation": {"method": "one_point", "probability": 0.2},
+    "inversion": {"enabled": True, "probability": 0.2},
     "elitism": {"enabled": True, "rate":0.2},
 }

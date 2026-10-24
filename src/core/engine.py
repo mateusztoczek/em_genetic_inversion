@@ -38,7 +38,6 @@ class GAConfig:
     tournament_size: int= 3
     # rate is None when the operator is turned off
     elitism_rate: float | None= None
-    # not applied yet - crossover, mutation and inversion are not implemented
     chromosome_mode: str= "separate"
     crossover_method: str= "one_point"
     crossover_rate: float= 0.8

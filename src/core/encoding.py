@@ -10,7 +10,6 @@ def calc_bit_len(a: float, b: float, precision: float) -> int:
     return m
 
 
-# TODO: change list of int to bitarray or smt to not waste memory on such stupid thing
 def generate_chromosome(m: int, rng: random.Random | None = None)-> list:
     chr_rng= rng if rng is not None else random._inst
     return [chr_rng.randint(0,1) for _ in range(m)]
