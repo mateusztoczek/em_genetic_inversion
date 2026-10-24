@@ -46,7 +46,7 @@ def build_config() -> dict:
     f_old, sel_old, cx_old= old["function"], old["selection"], old["crossover"]
 
     name= s.get("w_function", f_old["name"])
-    if name== "mccormick": dim= 2
+    if name in ("mccormick", "mccormick_neg"): dim= 2
     elif name== "cec2014_f9": dim= s.get("w_dim_cec", f_old["dimensions"])
     else: dim= s.get("w_dim", f_old["dimensions"])
 
@@ -124,7 +124,7 @@ def render_function_section(cfg: dict):
     name= col1.selectbox("Funkcja celu", list(FUNCTIONS), format_func=FUNCTIONS.get, key="w_function", on_change=apply_function_defaults)    
     col2.radio("Cel", ["min", "max"], horizontal=True, key="w_goal")
 
-    if name== "mccormick":
+    if name in ("mccormick", "mccormick_neg"):
         dim= col1.number_input("Liczba wymiarów", value=2, disabled=True, help="McCormick jest zdefiniowana tylko dla 2 zmiennych.")
     elif name== "cec2014_f9":
         dim= col1.selectbox("Liczba wymiarów", CEC_DIMS, key="w_dim_cec")

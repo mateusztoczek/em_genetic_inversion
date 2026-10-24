@@ -1,5 +1,6 @@
 FUNCTIONS= {
     "mccormick": "McCormick (2D)",
+    "mccormick_neg": "−McCormick (2D, maksymalizacja)",
     "rastigin": "Rastrigin",
     "cec2014_f9": "CEC 2014 F9",
 }
@@ -13,6 +14,12 @@ DEFAULT_FUNCTION_CONFIG={
     },
     "mccormick":{
         "goal":"min",
+        "dimensions": 2,
+        "scope":[-3,4],
+        "decimal_places":4
+    },
+    "mccormick_neg":{
+        "goal":"max",
         "dimensions": 2,
         "scope":[-3,4],
         "decimal_places":4

@@ -5,6 +5,7 @@ from src.ui.config_screen import open_config
 from src.ui.constants import FUNCTIONS, SELECTION_METHODS, CROSSOVER_METHODS, MUTATION_METHODS, CHROMOSOME_MODES
 from .engine_mapping import to_ga_config
 from src.core.engine import GASimulation
+from src.core.storage import run_with_recording, DEFAULT_DB_PATH
 
 def render_main_screen():
     cfg= st.session_state.ga_config
@@ -45,10 +46,11 @@ def render_main_screen():
             with st.spinner("myślenie..."):
                 start=perf_counter()
                 s=GASimulation(ga_config)
-                s.run()
+                run_id=run_with_recording(s)
                 sim_time= perf_counter()-start
             st.session_state["simulation"]=s
             st.session_state["simulation_time"]=sim_time
+            st.session_state["run_id"]=run_id
         except Exception as e: st.exception(e)
         #except ValueError as e: st.error(f"Error config: {e}")
     if "simulation" in st.session_state:
@@ -61,6 +63,7 @@ def render_main_screen():
         st.write("Najlepsze rozwiązanie:",", ".join(f"x{i} = {x:.6f}" for i, x in enumerate(best.best_x, start=1)))
         st.write("Najlepszy wynik w epoce:", best.epoch)
         st.write("Łączna liczba epok:", s.epoch)
+        st.caption(f"Zapisano w bazie jako run_id={st.session_state['run_id']} ({DEFAULT_DB_PATH})")
 
         df= pd.DataFrame([{
                 "Epoka": stat.epoch,

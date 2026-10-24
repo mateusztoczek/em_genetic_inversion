@@ -55,6 +55,23 @@ def test_initial_population():
         assert ind.fitness_score== pytest.approx(res_func(x))
 
 
+def test_mccormick_neg_is_negated_mccormick():
+    f, neg= get_function("mccormick", 2), get_function("mccormick_neg", 2)
+    for x in ([-0.54719, -1.54719], [1.0, 2.0], [-3.0, 4.0]):
+        assert neg(x)== pytest.approx(-f(x))
+    assert neg([-0.54719, -1.54719])== pytest.approx(1.9132, abs=1e-4)
+
+
+def test_maximising_mccormick_neg_mirrors_minimising_mccormick():
+    params= dict(population=50, epochs=30, seed=2, elitism_rate=0.1)
+    mini= GASimulation(make_config(function="mccormick", goal="min", **params))
+    maxi= GASimulation(make_config(function="mccormick_neg", goal="max", **params))
+    mini.run(); maxi.run()
+    for s_min, s_max in zip(mini.history, maxi.history):
+        assert s_max.best_fitness== pytest.approx(-s_min.best_fitness)
+        assert s_max.best_x== pytest.approx(s_min.best_x)
+
+
 @pytest.mark.parametrize("method,count", [("best", 5), ("worst", 5), ("natural", None), ("tournament", None), ("roulette", None)])
 def test_run_all_selections(method, count):
     sim= GASimulation(make_config(selection_method=method, selection_count=count, elitism_rate=0.2))
