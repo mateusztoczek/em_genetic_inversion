@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from src.ui.config_screen import open_config
-from src.ui.constants import FUNCTIONS, SELECTION_METHODS, CROSSOVER_METHODS, MUTATION_METHODS, CHROMOSOME_MODES
+from src.ui.constants import FUNCTIONS, SELECTION_METHODS, CROSSOVER_METHODS, MUTATION_METHODS, REPRESENTATION,CHROMOSOME_MODES
 from .engine_mapping import to_ga_config
 from src.core.storage import run_with_recording, DEFAULT_DB_PATH
 
@@ -11,6 +11,7 @@ def render_main_screen():
     sel= cfg["selection"]
     cx= cfg["crossover"]
     mut=cfg["mutation"]
+    repres= cfg["representation"]
     ch_mode=cfg["chromosome_mode"]
 
     st.title("Optymalizator ewolucyjny")

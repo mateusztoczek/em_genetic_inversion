@@ -1,9 +1,9 @@
 import streamlit as st
 
-from src.core.encoding import calc_bit_len
+from src.core.binary_encoding import calc_bit_len
 from src.ui.engine_mapping import selected_count, to_ga_config
 from src.ui.constants import (
-    FUNCTIONS, DEFAULT_FUNCTION_CONFIG, CEC_DIMS, SELECTION_METHODS, CROSSOVER_METHODS,
+    FUNCTIONS, DEFAULT_FUNCTION_CONFIG, CEC_DIMS, SELECTION_METHODS, REPRESENTATION, CROSSOVER_METHODS,
     MUTATION_METHODS, CHROMOSOME_MODES,
 )
 
@@ -71,6 +71,7 @@ def build_config() -> dict:
             "probability": s.get("w_cx_probability", cx_old["probability"]),
             "uniform_swap": s.get("w_uniform_swap", cx_old["uniform_swap"]),
         },
+        "representation":s.get("w_representation",old.get("representation","binary")),
         "chromosome_mode":s.get("w_chromosome_mode",old.get("chromosome_mode","separate")),
         "mutation":{
             "method":s.get("w_mutation_method",old["mutation"]["method"]),
@@ -112,8 +113,13 @@ def render_function_section(cfg: dict):
     seed("w_range_max", float(f["scope"][1]))
     seed("w_decimal_places", f["decimal_places"])
     seed("w_chromosome_mode", cfg.get("chromosome_mode","separate"))
+    seed("w_representation", cfg.get("representation","binary"))
 
-    st.selectbox("Tryb operacji na chromosomach", list(CHROMOSOME_MODES), format_func=CHROMOSOME_MODES.get, key="w_chromosome_mode")
+    representation = st.selectbox("Reprezentacja chromosomu",list(REPRESENTATION),format_func=REPRESENTATION.get,key="w_representation")
+
+    if representation == "binary":
+        seed("w_chromosome_mode", cfg.get("chromosome_mode", "separate"))
+        st.selectbox("Tryb operacji na chromosomach",list(CHROMOSOME_MODES),format_func=CHROMOSOME_MODES.get,key="w_chromosome_mode")
 
     col1, col2= st.columns(2)
     #name= col1.selectbox("Funkcja celu", list(FUNCTIONS), format_func=FUNCTIONS.get, key="w_function")
@@ -131,13 +137,13 @@ def render_function_section(cfg: dict):
     a= col_a.number_input("Przedział: od", key="w_range_min")
     b= col_b.number_input("Przedział: do", key="w_range_max")
 
-    places= st.number_input("Dokładność reprezentacji binarnej (miejsca po przecinku)",
-                            min_value=0, max_value=12, step=1, key="w_decimal_places")
-    try:
-        m= calc_bit_len(a, b, 10**-places)
-        st.caption(f"Długość chromosomu: {m} bitów na zmienną, łącznie {m*dim} bitów na osobnika.")
-    except ValueError:
-        st.caption("Nie da się policzyć długości chromosomu dla takiego przedziału.")
+    if representation=='binary':
+        places= st.number_input("Dokładność reprezentacji binarnej (miejsca po przecinku)",min_value=0, max_value=12, step=1, key="w_decimal_places")
+        try:
+            m= calc_bit_len(a, b, 10**-places)
+            st.caption(f"Długość chromosomu: {m} bitów na zmienną, łącznie {m*dim} bitów na osobnika.")
+        except ValueError:
+            st.caption("Nie da się policzyć długości chromosomu dla takiego przedziału.")
 
 
 def render_algorithm_section(cfg: dict):

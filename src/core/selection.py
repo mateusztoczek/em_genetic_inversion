@@ -60,8 +60,7 @@ def selection_select_roulette(pop: GAPopulation, goal:str, count: int, rng: rand
     if any(ind.fitness_score is None for ind in pop): raise ValueError("every individual in population must have evaluated fitness score")
     if goal not in ["min",'max']: raise ValueError("Unknown function")
 
-    scores= [ind.fitness_score for ind in pop]
-    # shift scores so the worst individual gets 0 - works for negative fitness and for minimization
+    scores= [ind.fitness_score for ind in pop if ind.fitness_score is not None]
     if goal=="max": weights= [s-min(scores) for s in scores]
     else: weights= [max(scores)-s for s in scores]
 

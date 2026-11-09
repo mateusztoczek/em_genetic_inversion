@@ -24,6 +24,7 @@ def to_ga_config(cfg: dict) -> GAConfig:
         selection_method=sel["method"],
         selection_count=selection_count,
         tournament_size=sel["tournament_size"],
+        representation=cfg["representation"],
         chromosome_mode=cfg["chromosome_mode"],
         elitism_rate=cfg["elitism"]["rate"] if cfg["elitism"]["enabled"] else None,
         crossover_method=cfg["crossover"]["method"],

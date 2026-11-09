@@ -3,25 +3,18 @@ import random
 from collections.abc import Callable
 from dataclasses import dataclass
 from statistics import pstdev
-from .encoding import decode_individual, calc_bit_len, generate_population
-from .ga_structure import GAIndividual, GAPopulation
+from .binary_encoding import decode_individual, calc_bit_len, generate_binary_population
+from .ga_structure import GAIndividual, GAPopulation, BinaryIndividual, RealIndividual
 from .functions import get_function, validate_function
 from .selection import selection_select_parents, selection_select_ordered
 from .operations import crossover_ind, mutation_ind, inversion_ind
 
 IMPLEMENTED_SELECTION= ("best", "worst", "natural", "tournament", "roulette")
 
+def genotype_key(i: GAIndividual)->tuple:
+    if isinstance(i, BinaryIndividual): return tuple(tuple(ch) for ch in i.chromosomes)
 
-def evaluate_individual(individual: GAIndividual, ga_function, a, b):
-    decoded_i= decode_individual(individual=individual,a=a,b=b)
-    fitness= ga_function(decoded_i)
-    individual.fitness_score= fitness
-
-
-def evaluate_population(population: GAPopulation, ga_function,a,b):
-    for ind in population:
-        evaluate_individual(ind, ga_function,a, b)
-
+    return tuple(i.chromosomes)
 
 @dataclass
 class GAConfig:
@@ -33,11 +26,10 @@ class GAConfig:
     population: int
     epochs: int
     selection_method: str
-    # size of the mating pool; None = as many as needed to refill the population
     selection_count: int | None= None
     tournament_size: int= 3
-    # rate is None when the operator is turned off
     elitism_rate: float | None= None
+    representation: str="binary"
     chromosome_mode: str= "separate"
     crossover_method: str= "one_point"
     crossover_rate: float= 0.8
@@ -60,6 +52,7 @@ class GAConfig:
             raise ValueError("Tournament size must be between 3 and population size.")
         if self.elitism_rate is not None and not 0<= self.elitism_rate< 1:
             raise ValueError("Elitism rate must be in [0, 1).")
+        if self.representation not in ("binary", "real"): raise ValueError("Unknown representation")                
         if self.chromosome_mode not in ("separate", "combined"): raise ValueError("Unknown operation mode")
         for name in ("crossover_rate", "mutation_rate", "inversion_rate"):
             rate= getattr(self, name)
@@ -85,12 +78,16 @@ class GASimulation:
         self.config= config
         self.rng= random.Random(config.seed)
         self.function= get_function(config.function, config.dimensions)
-        self.bit_len= calc_bit_len(*config.scope, config.precision)
+
+        if config.representation=='binary':
+            self.bit_len= calc_bit_len(*config.scope, config.precision)
+            self.population= generate_binary_population(config.population, self.bit_len, config.dimensions, self.rng)
+        else:        
+            self.bit_len= None
+            self.population= generate_real_population(config.population, config.dimensions,config.scope, self.rng)        
 
         elite= round((config.elitism_rate or 0)*config.population)
         self.elite_count= min(elite, config.population-1)
-
-        self.population= generate_population(config.population, self.bit_len, config.dimensions, self.rng)
         self._evaluate()
         self.history: list[EpochStats]= [self._stats()]
 
@@ -107,7 +104,11 @@ class GASimulation:
         return selection_select_ordered(self.population, "best", self.config.goal, 1)[0]
 
     def decode(self, individual: GAIndividual) -> list[float]:
-        return decode_individual(individual, *self.config.scope)
+        if isinstance(individual, BinaryIndividual):
+            return decode_individual(individual,*self.config.scope)
+    
+        return individual.chromosomes.copy() 
+    
 
     def step(self) -> EpochStats:
         if self.finished: raise RuntimeError("Simulation already finished.")
@@ -132,31 +133,43 @@ class GASimulation:
             if on_epoch: on_epoch(stats)
         return self.history
 
-    def _reproduce(self, pool: list[GAIndividual], count: int) -> list[GAIndividual]:
-        cfg=self.config
+    def _reproduce(self, pool: list[GAIndividual],count: int)->list[GAIndividual]:
+        cfg= self.config
         childs=[]
-
         while len(childs)<count:
-            p1, p2=self.rng.choices(pool,k=2)
-            ch1, ch2= crossover_ind(p1, p2,cfg.crossover_method,cfg.chromosome_mode,cfg.crossover_rate,self.rng)
-            
-            for ch in (ch1,ch2):
-                ch=mutation_ind(ch,cfg.mutation_method, cfg.chromosome_mode, cfg.mutation_rate, self.rng)
-                if cfg.inversion_rate is not None: ch= inversion_ind(ch, cfg.chromosome_mode, cfg.inversion_rate, self.rng)
-                childs.append(ch)
-                if len(childs)==count: break
+            p1,p2 =self.rng.choices(pool, k=2)
+            if isinstance(p1,BinaryIndividual) and isinstance(p2, BinaryIndividual):
 
-        return childs         
+                ch1,ch2 = crossover_ind(p1,p2,cfg.crossover_method,cfg.chromosome_mode,cfg.crossover_rate,self.rng)
+                for ch in (ch1,ch2):
+                    ch=mutation_ind(ch,cfg.mutation_method,cfg.chromosome_mode,cfg.mutation_rate,self.rng)
+
+                    if cfg.inversion_rate is not None:
+                        ch =inversion_ind(ch,cfg.chromosome_mode,cfg.inversion_rate,self.rng)
+                childs.append(ch)
+                if len(childs)==count:break
+            elif isinstance(p1, RealIndividual) and isinstance(p2, RealIndividual):
+                
+                ch1,ch2 = real_crossover_ind(p1,p2,cfg.crossover_method,cfg.crossover_rate,self.rng)
+                for ch in (ch1,ch2):
+                    ch=real_mutation_ind(ch,cfg.mutation_method,cfg.mutation_rate,cfg.scope,self.rng)
+
+                childs.append(ch)
+                if len(childs)==count:break
+        return childs
 
 
     def _evaluate(self):
-        evaluate_population(self.population, self.function, *self.config.scope)
+        for i in self.population:
+            dec=self.decode(i)
+            i.fitness_score=self.function(dec)
+
 
     def _stats(self) -> EpochStats:
         best= self.best
         assert best.fitness_score is not None, "best individual doent have fittness score, must have one to run calculations"
         scores= [ind.fitness_score for ind in self.population if ind.fitness_score is not None]
-        u_genotypes= len({tuple(tuple(ch) for ch in ind.chromosomes)for ind in self.population})
+        u_genotypes=len({ genotype_key(i) for i in self.population})
         return EpochStats(
             epoch=self.epoch,
             best_fitness=best.fitness_score,
@@ -166,3 +179,12 @@ class GASimulation:
             best_x=self.decode(best),
             u_genotype=u_genotypes
         )
+
+
+'''
+def _evaluate(self):
+        evaluate_population(self.population, self.function, *self.config.scope)
+
+
+'''
+    

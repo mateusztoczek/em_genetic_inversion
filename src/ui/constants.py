@@ -49,6 +49,11 @@ CROSSOVER_METHODS= {
     "granular": "Ziarniste",
 }
 
+REPRESENTATION={
+    "binary": "Reprezentacja binarna",
+    "real": "Reprezentacja rzeczywista"
+}
+
 CHROMOSOME_MODES={
     "separate": "Osobne operacje dla każdej zmiennej",
     "combined": "Połączone chromosomy"
@@ -78,6 +83,7 @@ DEFAULT_CONFIG= {
         "probability": 0.8,
         "uniform_swap": 0.5,
     },
+    "representation": "binary",
     "chromosome_mode": "separate",
     "mutation": {"method": "one_point", "probability": 0.2},
     "inversion": {"enabled": True, "probability": 0.2},

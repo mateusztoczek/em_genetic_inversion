@@ -6,8 +6,16 @@ from dataclasses import dataclass
 from time import perf_counter
 from pathlib import Path
 from .engine import GAConfig, GASimulation
+from .ga_structure import GAIndividual, BinaryIndividual 
 
 DEFAULT_DB_PATH= Path(__file__).resolve().parents[2]/"results"/"ga_results.db"
+
+
+def serialize_genotype(i: GAIndividual)-> str:
+    if isinstance(i,BinaryIndividual):return json.dumps(["".join(map(str, ch)) for ch in i.chromosomes])
+
+    return json.dumps(i.chromosomes)
+    
 
 SCHEMA= """
 CREATE TABLE IF NOT EXISTS runs(
@@ -26,6 +34,7 @@ CREATE TABLE IF NOT EXISTS runs(
     selection_count INTEGER,
     tournament_size INTEGER,
     elitism_rate REAL,
+    representation TEXT NOT NULL DEFAULT 'binary',
     chromosome_mode TEXT NOT NULL,
     crossover_method TEXT NOT NULL,
     crossover_rate REAL NOT NULL,
@@ -116,11 +125,11 @@ class SQLiteRecorder:
         cfg= sim.config
         cur= self.conn.execute(
             """INSERT INTO runs(started_at, function, goal, dimensions, scope_min, scope_max, precision, population, epochs,
-                selection_method, selection_count, tournament_size, elitism_rate, chromosome_mode, crossover_method,
+                selection_method, selection_count, tournament_size, elitism_rate, representation,chromosome_mode, crossover_method,
                 crossover_rate, mutation_method, mutation_rate, inversion_rate, seed, bit_len, elite_count, config_json)
-               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (_now(), cfg.function, cfg.goal, cfg.dimensions, cfg.scope[0], cfg.scope[1], cfg.precision, cfg.population,
-             cfg.epochs, cfg.selection_method, cfg.selection_count, cfg.tournament_size, cfg.elitism_rate,
+             cfg.epochs, cfg.selection_method, cfg.selection_count, cfg.tournament_size, cfg.elitism_rate, cfg.representation,
              cfg.chromosome_mode, cfg.crossover_method, cfg.crossover_rate, cfg.mutation_method, cfg.mutation_rate,
              cfg.inversion_rate, cfg.seed, sim.bit_len, sim.elite_count, json.dumps(asdict(cfg))),
         )
@@ -140,10 +149,7 @@ class SQLiteRecorder:
         )
         if self.save_individuals:
             self.conn.executemany(
-                "INSERT INTO individuals VALUES(?,?,?,?,?,?)",
-                ((self.run_id, sim.epoch, i, ind.fitness_score, json.dumps(sim.decode(ind)),
-                  json.dumps(["".join(map(str, ch)) for ch in ind.chromosomes]))
-                 for i, ind in enumerate(sim.population)),
+                "INSERT INTO individuals VALUES(?,?,?,?,?,?)", ((self.run_id, sim.epoch, i, ind.fitness_score, json.dumps(sim.decode(ind)),serialize_genotype(ind)) for i, ind in enumerate(sim.population)),
             )
         self.write_time+= perf_counter()-start
 
