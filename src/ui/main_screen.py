@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from src.ui.config_screen import open_config
-from src.ui.constants import FUNCTIONS, SELECTION_METHODS, CROSSOVER_METHODS, MUTATION_METHODS, REPRESENTATION,CHROMOSOME_MODES
+from src.ui.constants import FUNCTIONS, SELECTION_METHODS, CROSSOVER_METHODS_REAL, CROSSOVER_METHODS_BINARY, MUTATION_METHODS_BINARY,MUTATION_METHODS_NONBINARY, REPRESENTATION,CHROMOSOME_MODES
 from .engine_mapping import to_ga_config
 from src.core.storage import run_with_recording, DEFAULT_DB_PATH
 
@@ -14,28 +14,38 @@ def render_main_screen():
     repres= cfg["representation"]
     ch_mode=cfg["chromosome_mode"]
 
+    cx_poll= CROSSOVER_METHODS_BINARY if repres=='binary' else CROSSOVER_METHODS_REAL
+    mut_poll=MUTATION_METHODS_BINARY if repres=='binary' else MUTATION_METHODS_NONBINARY
+
     st.title("Optymalizator ewolucyjny")
     with st.container(border=True):
-        g= "Minimalizacja" if f["goal"] == "min" else "Maksymalizacja"
-        st.markdown(
-            f"**Tryb operacji na chromosomach:** {CHROMOSOME_MODES[ch_mode]}  \n"
-            f"**Funkcja celu:** {FUNCTIONS[f['name']]}  \n"
-            f"&emsp;**Cel:** {g}  \n"
+        g = "Minimalizacja" if f["goal"]=="min" else "Maksymalizacja"
+        desc_text=(f"**Reprezentacja:** {REPRESENTATION[repres]}  \n")
+        if repres== 'binary': desc_text+= (f"**Tryb operacji na chromosomach:** {CHROMOSOME_MODES[ch_mode]}  \n")
+        desc_text+=(f"**Funkcja celu:** {FUNCTIONS[f['name']]}  \n"
+                    f"&emsp;**Cel:** {g}  \n"
             f"&emsp;**Liczba wymiarów:** {f['dimensions']}  \n"
-            f"&emsp;**Zakres:** [{f['scope'][0]}, {f['scope'][1]}]  \n"
-            f"&emsp;**Precyzja:** {f['decimal_places']} miejsc  \n"
+                f"&emsp;**Zakres:** [{f['scope'][0]}, {f['scope'][1]}]  \n"
+        )
+
+        if repres=='binary':desc_text+= f"&emsp;**Precyzja:** {f['decimal_places']} miejsc  \n"
+        desc_text+=(
             f"**Liczba epok:** {cfg['epochs']}  \n"
             f"**Populacja:** {cfg['population']}  \n"
             f"**Selekcja:** {SELECTION_METHODS[sel['method']]}"
-            + (f" (rozmiar turnieju {sel['tournament_size']})" if sel["method"]== "tournament" else "")
-            + (f" ({sel[sel['method']+'_percent']}%)" if sel["method"] in ("best", "worst") else "")
-            + f"  \n**Krzyżowanie:** {CROSSOVER_METHODS[cx['method']]} | p={cx['probability']}  \n"
-            + f"**Mutacja:** {MUTATION_METHODS[mut['method']]} | p={mut['probability']}  \n"
-            + f"**Inwersja:** {'włączona' if cfg['inversion']['enabled'] else 'wyłączona'}"
-            + (f" | p={cfg['inversion']['probability']}" if cfg['inversion']['enabled'] else "")
-            + f"  \n**Elityzm:** {'włączony' if cfg['elitism']['enabled'] else 'wyłączony'}"
+            +(f" (rozmiar turnieju {sel['tournament_size']})" if sel["method"] == "tournament" else "")
+            +(f" ({sel[sel['method']+'_percent']}%)" if sel["method"] in ("best", "worst") else "")
+            +f"  \n**Krzyżowanie:** {cx_poll[cx['method']]} | p={cx['probability']}  \n"
+            +f"**Mutacja:** {mut_poll[mut['method']]} | p={mut['probability']}")
+
+        if repres=='binary':
+            desc_text +=(f"  \n**Inwersja:** {'włączona' if cfg['inversion']['enabled'] else 'wyłączona'}"+(f" | p={cfg['inversion']['probability']}" if cfg['inversion']['enabled'] else ""))
+
+        desc_text+= (
+            f"  \n**Elityzm:** {'włączony' if cfg['elitism']['enabled'] else 'wyłączony'}"
             + (f" | {cfg['elitism']['rate'] * 100:g}%" if cfg['elitism']['enabled'] else "")
         )
+        st.markdown(desc_text)
 
     st.checkbox("Zapisuj do bazy wszystkich osobników z każdej epoki (bardzo zwiększa rozmiar bazy)", key="save_individuals")
     col1, col2= st.columns(2)

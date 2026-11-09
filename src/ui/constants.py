@@ -42,11 +42,19 @@ SELECTION_METHODS= {
     "roulette": "Ruletkowa",
 }
 
-CROSSOVER_METHODS= {
+CROSSOVER_METHODS_BINARY= {
     "one_point": "Jednopunktowe",
     "two_point": "Dwupunktowe",
     "uniform": "Jednorode",
     "granular": "Ziarniste",
+}
+
+CROSSOVER_METHODS_REAL= {
+    "arithmetic": "Arytmetyczne",
+    "linear": "Linearne",
+    "blend_alpha": "Mieszające alfa ",
+    "blend_alpha_beta": "Mieszające alfa beta",
+    "average": "Uśredniające"
 }
 
 REPRESENTATION={
@@ -59,11 +67,17 @@ CHROMOSOME_MODES={
     "combined": "Połączone chromosomy"
 }
 
-MUTATION_METHODS={
+MUTATION_METHODS_BINARY={
     "one_point": "Jednopunktowe",
     "two_point": "Dwupunktowe",
     "boundary": "Brzegowa"
 }
+
+MUTATION_METHODS_NONBINARY={
+    "uniform": "Równoramienna",
+    "gaussian": "Gauss"
+}
+
 
 DEFAULT_CONFIG= {
     "function": {

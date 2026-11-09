@@ -3,11 +3,12 @@ import random
 from collections.abc import Callable
 from dataclasses import dataclass
 from statistics import pstdev
-from .binary_encoding import decode_individual, calc_bit_len, generate_binary_population
+from .encoding.binary import decode_individual, calc_bit_len, generate_binary_population
+from .encoding.real import generate_real_population
 from .ga_structure import GAIndividual, GAPopulation, BinaryIndividual, RealIndividual
 from .functions import get_function, validate_function
 from .selection import selection_select_parents, selection_select_ordered
-from .operations import crossover_ind, mutation_ind, inversion_ind
+from .operations import binary_crossover_ind,real_crossover_ind, binary_mutation_ind,real_mutation_ind, inversion_ind
 
 IMPLEMENTED_SELECTION= ("best", "worst", "natural", "tournament", "roulette")
 
@@ -140,9 +141,9 @@ class GASimulation:
             p1,p2 =self.rng.choices(pool, k=2)
             if isinstance(p1,BinaryIndividual) and isinstance(p2, BinaryIndividual):
 
-                ch1,ch2 = crossover_ind(p1,p2,cfg.crossover_method,cfg.chromosome_mode,cfg.crossover_rate,self.rng)
+                ch1,ch2 = binary_crossover_ind(p1,p2,cfg.crossover_method,cfg.chromosome_mode,cfg.crossover_rate,self.rng)
                 for ch in (ch1,ch2):
-                    ch=mutation_ind(ch,cfg.mutation_method,cfg.chromosome_mode,cfg.mutation_rate,self.rng)
+                    ch=binary_mutation_ind(ch,cfg.mutation_method,cfg.chromosome_mode,cfg.mutation_rate,self.rng)
 
                     if cfg.inversion_rate is not None:
                         ch =inversion_ind(ch,cfg.chromosome_mode,cfg.inversion_rate,self.rng)

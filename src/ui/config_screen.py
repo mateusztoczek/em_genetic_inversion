@@ -1,10 +1,10 @@
 import streamlit as st
 
-from src.core.binary_encoding import calc_bit_len
+from src.core.encoding.binary import calc_bit_len
 from src.ui.engine_mapping import selected_count, to_ga_config
 from src.ui.constants import (
-    FUNCTIONS, DEFAULT_FUNCTION_CONFIG, CEC_DIMS, SELECTION_METHODS, REPRESENTATION, CROSSOVER_METHODS,
-    MUTATION_METHODS, CHROMOSOME_MODES,
+    FUNCTIONS, DEFAULT_FUNCTION_CONFIG, CEC_DIMS, SELECTION_METHODS, REPRESENTATION, CROSSOVER_METHODS_BINARY, CROSSOVER_METHODS_REAL,
+    MUTATION_METHODS_BINARY, MUTATION_METHODS_NONBINARY, CHROMOSOME_MODES,
 )
 
 
@@ -50,6 +50,8 @@ def build_config() -> dict:
     elif name== "cec2014_f9": dim= s.get("w_dim_cec", f_old["dimensions"])
     else: dim= s.get("w_dim", f_old["dimensions"])
 
+    reprs=s.get("w_representation", old.get("representation", "binary"))
+
     return {
         "function": {
             "name": name,
@@ -71,15 +73,15 @@ def build_config() -> dict:
             "probability": s.get("w_cx_probability", cx_old["probability"]),
             "uniform_swap": s.get("w_uniform_swap", cx_old["uniform_swap"]),
         },
-        "representation":s.get("w_representation",old.get("representation","binary")),
-        "chromosome_mode":s.get("w_chromosome_mode",old.get("chromosome_mode","separate")),
+        "representation":reprs,
+        "chromosome_mode":(s.get("w_chromosome_mode",old.get("chromosome_mode","separate")) if reprs=='binary' else 'separate'),
         "mutation":{
             "method":s.get("w_mutation_method",old["mutation"]["method"]),
             "probability":s.get("w_mutation_probability",old["mutation"]["probability"])
         },
-        "inversion":{
-            "enabled":s.get("w_inversion",old["inversion"]["enabled"]),
-            "probability":s.get("w_inversion_probability",old["inversion"]["probability"])
+        "inversion": {
+            "enabled": (s.get("w_inversion", old["inversion"]["enabled"]) if reprs=='binary' else False),
+            "probability": s.get("w_inversion_probability",old["inversion"]["probability"])
         },
         "elitism":{
             "enabled":s.get("w_elitism",old["elitism"]["enabled"]),
@@ -179,12 +181,13 @@ def render_selection_section(cfg: dict):
 def render_crossover_section(cfg: dict):
     cx= cfg["crossover"]
     st.subheader("Krzyżowanie")
-
+    repres=st.session_state.get("w_representation", cfg.get("representation", "binary"))
+    methds=(CROSSOVER_METHODS_BINARY if repres=='binary' else CROSSOVER_METHODS_REAL)
     seed("w_cx_method", cx["method"])
     seed("w_cx_probability", cx["probability"])
-
+    if st.session_state["w_cx_method"] not in methds: st.session_state["w_cx_method"] = next(iter(methds))
     col1, col2= st.columns(2)
-    method= col1.selectbox("Metoda krzyżowania", list(CROSSOVER_METHODS), format_func=CROSSOVER_METHODS.get, key="w_cx_method")
+    method= col1.selectbox("Metoda krzyżowania", list(methds), format_func=methds.get, key="w_cx_method")
     col2.slider("Prawdopodobieństwo krzyżowania", 0.0, 1.0, step=0.01, key="w_cx_probability")
 
     if method== "uniform": seed("w_uniform_swap", cx["uniform_swap"])
@@ -193,22 +196,26 @@ def render_operators_section(cfg: dict):
     elitism= cfg["elitism"]
     mutation= cfg["mutation"]
     inversion= cfg["inversion"]
-    
+    repres=st.session_state.get("w_representation", cfg.get("representation", "binary"))
+    methds=(MUTATION_METHODS_BINARY if repres=='binary' else MUTATION_METHODS_NONBINARY)
+
+    if st.session_state["w_mutation_method"] not in methds: st.session_state["w_mutation_method"] = next(iter(methds))    
     st.subheader("Mutacja")
     seed("w_mutation_method", mutation["method"])
     seed("w_mutation_probability", mutation["probability"])
 
     col1,col2 = st.columns(2)
-    col1.selectbox("Metoda mutacji", list(MUTATION_METHODS),format_func=MUTATION_METHODS.get,key="w_mutation_method",)
+    col1.selectbox("Metoda mutacji", list(methds),format_func=methds.get,key="w_mutation_method",)
     col2.slider("Prawdopodobieństwo mutacji",min_value=0.0,max_value=1.0,step=0.01,key="w_mutation_probability",)
 
-    st.subheader("Inwersja")
-    seed("w_inversion", inversion["enabled"])
-    seed("w_inversion_probability", inversion["probability"])
+    if repres=='binary':
+        st.subheader("Inwersja")
+        seed("w_inversion", inversion["enabled"])
+        seed("w_inversion_probability", inversion["probability"])
 
-    col1,col2=st.columns(2)
-    col1.toggle("Możliwa inwersja", key="w_inversion",)
-    col2.slider("Prawdopodobieństwo inwersji",min_value=0.0,max_value=1.0,step=0.01,key="w_inversion_probability",disabled=not st.session_state.w_inversion,)
+        col1,col2=st.columns(2)
+        col1.toggle("Możliwa inwersja", key="w_inversion",)
+        col2.slider("Prawdopodobieństwo inwersji",min_value=0.0,max_value=1.0,step=0.01,key="w_inversion_probability",disabled=not st.session_state.w_inversion,)
 
     st.subheader("Strategia elitarna")
     seed("w_elitism",elitism["enabled"])

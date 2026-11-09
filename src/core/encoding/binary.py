@@ -1,6 +1,6 @@
 import random
 import math
-from .ga_structure import GAIndividual, GAPopulation, BinaryIndividual, RealIndividual
+from ..ga_structure import GAPopulation, BinaryIndividual
 
 def calc_bit_len(a: float, b: float, precision: float) -> int:
     if b-a <=0.0:
