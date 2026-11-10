@@ -1,7 +1,7 @@
 import random
 from .ga_structure import BinaryIndividual, RealIndividual
 from .crossover import binary_crossover_apply, real_crossover_apply
-from .mutation import mutation_apply
+from .mutation import binary_mutation_apply, real_mutation_apply
 from .inversion import inversion_apply
 from .functions import GAFunction
 
@@ -70,11 +70,21 @@ def binary_mutation_ind(ind: BinaryIndividual, method: str, ch_mode: str, probab
     segment= _chromosome_as_segments(ind,ch_mode)
     resp_target=[]
     for ch in segment:
-        if rng.random()<probability: resp_ch=mutation_apply(ch, method, rng)
+        if rng.random()<probability: resp_ch=binary_mutation_apply(ch, method, rng)
         else: resp_ch= ch.copy()
         resp_target.append(resp_ch)
 
     return _chromosome_as_ind(resp_target,ind,ch_mode)
+
+
+def real_mutation_ind(ind: RealIndividual, method: str, probability: float,scope: tuple[float,float], rng: random.Random)-> RealIndividual:
+    if len(ind.chromosomes)==0: raise ValueError("Empty individual")
+    resp_ch=[]
+    for i in ind.chromosomes:
+        if rng.random()<probability: resp_i= real_mutation_apply(i, method,scope,rng)
+        else: resp_i= i
+        resp_ch.append(resp_i)
+    return RealIndividual(resp_ch)
 
 
 def inversion_ind(ind: BinaryIndividual, ch_mode: str, probability: float, rng: random.Random)-> BinaryIndividual:

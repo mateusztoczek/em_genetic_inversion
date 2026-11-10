@@ -28,7 +28,12 @@ def mutation_twopoint(ch: list[int], rng: random.Random)->list[int]:
     return resp
 
 
-def mutation_apply(ch: list[int], method: str, rng: random.Random)-> list[int]:
+def mutation_uniform(g: float,scope: tuple[float, float], rng: random.Random)-> float:
+    s_min, s_max=scope
+    return rng.uniform(s_min, s_max)
+
+
+def binary_mutation_apply(ch: list[int], method: str, rng: random.Random)-> list[int]:
     methods= {
         "one_point": mutation_onepoint,
         "two_point":mutation_twopoint,
@@ -37,3 +42,13 @@ def mutation_apply(ch: list[int], method: str, rng: random.Random)-> list[int]:
     if method not in methods: raise ValueError(f"unknown mutation method: {method}")
 
     return methods[method](ch, rng)
+
+
+def real_mutation_apply(g: float, method: str, scope: tuple[float, float],rng: random.Random)-> float:
+    methods= {
+        "uniform": mutation_uniform,
+        "gaussian":mutation_gaussian
+    }
+    if method not in methods: raise ValueError(f"unknown mutation method: {method}")
+
+    return methods[method](g,scope, rng)
