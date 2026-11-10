@@ -36,6 +36,17 @@ def crossover_uniform(a,b,rng):
     return ch1,ch2
 
 
+def crossover_linear(a,b,scope, rng, ga_func, goal):
+    if goal not in ("min", "max"): raise ValueError("Unknown goal")
+    ch1=[(x+y)/2 for x,y in zip(a,b,strict=True)] 
+    ch2=[(1.5*x+0.5*y) for x,y in zip(a,b,strict=True)] 
+    ch3=[(-0.5*x+1.5*y) for x,y in zip(a,b,strict=True)] 
+    s_min, s_max=scope
+    chromosoms=[ch for ch in(ch1,ch2,ch3) if all(s_min<=i<=s_max for i in ch)]
+    if len(chromosoms)<2: chromosoms.extend((a.copy(),b.copy()))
+    return chromosoms[0].copy(), chromosoms[1].copy()
+
+
 def crossover_arithmetic(a,b,scope,rng):
     alpha_rng= rng.random()
     ch1=[alpha_rng*x+(1-alpha_rng)*y for x,y in zip(a,b,strict=True)]
@@ -110,9 +121,9 @@ def real_crossover_apply(ch1: list[float], ch2: list[float], method: str,scope: 
     
     if method=='blend_alpha': return crossover_blend_alpha(ch1,ch2,scope,rng,alpha)
     if method=='blend_alpha_beta': return crossover_blend_alpha_beta(ch1,ch2,scope,rng,alpha, beta)
+    if method=='linear': return crossover_linear(ch1,ch2,scope,rng,ga_func,goal )
     
     othr_methods={
-        # "linear": crossover_linear,
         "arithmetic": crossover_arithmetic,
         "flat": crossover_flat,
         "average": crossover_average
