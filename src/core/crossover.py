@@ -40,10 +40,11 @@ def crossover_linear(a,b,scope, rng, ga_func, goal):
     if goal not in ("min", "max"): raise ValueError("Unknown goal")
     ch1=[(x+y)/2 for x,y in zip(a,b,strict=True)] 
     ch2=[(1.5*x+0.5*y) for x,y in zip(a,b,strict=True)] 
-    ch3=[(-0.5*x+1.5*y) for x,y in zip(a,b,strict=True)] 
+    ch3=[(-0.5*x-1.5*y) for x,y in zip(a,b,strict=True)] 
     s_min, s_max=scope
     chromosoms=[ch for ch in(ch1,ch2,ch3) if all(s_min<=i<=s_max for i in ch)]
     if len(chromosoms)<2: chromosoms.extend((a.copy(),b.copy()))
+    chromosoms.sort(key=ga_func,reverse=(goal=='max'))
     return chromosoms[0].copy(), chromosoms[1].copy()
 
 
