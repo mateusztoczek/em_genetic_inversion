@@ -71,6 +71,8 @@ def build_config() -> dict:
         "crossover": {
             "method": s.get("w_cx_method", cx_old["method"]),
             "probability": s.get("w_cx_probability", cx_old["probability"]),
+            "alpha": s.get("w_cx_alpha", cx_old.get("alpha", 0.3)),
+            "beta": s.get("w_cx_beta", cx_old.get("beta",0.3)),
             "uniform_swap": s.get("w_uniform_swap", cx_old["uniform_swap"]),
         },
         "representation":reprs,
@@ -189,7 +191,12 @@ def render_crossover_section(cfg: dict):
     col1, col2= st.columns(2)
     method= col1.selectbox("Metoda krzyżowania", list(methds), format_func=methds.get, key="w_cx_method")
     col2.slider("Prawdopodobieństwo krzyżowania", 0.0, 1.0, step=0.01, key="w_cx_probability")
-
+    if method in ("blend_alpha","blend_alpha_beta"):
+        seed("w_cx_alpha", cx.get("alpha", 0.3))
+        st.number_input("Współczynnik alpha",min_value=0.0,step=0.1,key="w_cx_alpha")
+    if method=="blend_alpha_beta":
+        seed("w_cx_beta", cx.get("beta",0.3))
+        st.number_input("Współczynnik beta",min_value=0.0,step=0.1,key="w_cx_beta")
     if method== "uniform": seed("w_uniform_swap", cx["uniform_swap"])
 
 def render_operators_section(cfg: dict):

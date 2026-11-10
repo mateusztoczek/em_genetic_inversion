@@ -35,9 +35,12 @@ def render_main_screen():
             f"**Selekcja:** {SELECTION_METHODS[sel['method']]}"
             +(f" (rozmiar turnieju {sel['tournament_size']})" if sel["method"] == "tournament" else "")
             +(f" ({sel[sel['method']+'_percent']}%)" if sel["method"] in ("best", "worst") else "")
-            +f"  \n**Krzyżowanie:** {cx_poll[cx['method']]} | p={cx['probability']}  \n"
-            +f"**Mutacja:** {mut_poll[mut['method']]} | p={mut['probability']}")
-
+            +f"  \n**Krzyżowanie:** {cx_poll[cx['method']]} | p={cx['probability']}  \n")
+        
+        if cx["method"] in ("blend_alpha", "blend_alpha_beta"): desc_text+= f" | α={cx.get('alpha', 0.3):g}"
+        if cx["method"]=="blend_alpha_beta": desc_text+= f" | β={cx.get('beta', 0.3):g}"
+        desc_text+=f"**Mutacja:** {mut_poll[mut['method']]} | p={mut['probability']}"
+        
         if repres=='binary':
             desc_text +=(f"  \n**Inwersja:** {'włączona' if cfg['inversion']['enabled'] else 'wyłączona'}"+(f" | p={cfg['inversion']['probability']}" if cfg['inversion']['enabled'] else ""))
 

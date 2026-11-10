@@ -1,8 +1,9 @@
 import random
-from .ga_structure import BinaryIndividual
-from .crossover import crossover_apply
+from .ga_structure import BinaryIndividual, RealIndividual
+from .crossover import binary_crossover_apply, real_crossover_apply
 from .mutation import mutation_apply
 from .inversion import inversion_apply
+from .functions import GAFunction
 
 def _chromosome_as_segments(ind: BinaryIndividual, ch_mode: str) -> list[list[int]]:
     if ch_mode=='separate': return [chrom.copy() for chrom in ind.chromosomes]
@@ -35,13 +36,13 @@ def _chromosome_as_ind(segments: list[list[int]], temp_chromosome: BinaryIndivid
     raise ValueError(f"Unknown chromosome mode: {ch_mode}")
 
 
-def crossover_ind(p1: BinaryIndividual, p2: BinaryIndividual, method: str, ch_mode: str, probability: float, rng: random.Random)-> tuple[BinaryIndividual, BinaryIndividual]:
+def binary_crossover_ind(p1: BinaryIndividual, p2: BinaryIndividual, method: str, ch_mode: str, probability: float, rng: random.Random)-> tuple[BinaryIndividual, BinaryIndividual]:
     segment1= _chromosome_as_segments(p1, ch_mode)
     segment2= _chromosome_as_segments(p2, ch_mode)
     ch1_segments=[]
     ch2_segments=[]
     for ch1,ch2 in zip(segment1, segment2, strict=True):
-        if rng.random()<probability: resp_ch1, resp_ch2= crossover_apply(ch1, ch2,method,rng)
+        if rng.random()<probability: resp_ch1, resp_ch2= binary_crossover_apply(ch1, ch2,method,rng)
         else: 
             resp_ch1= ch1.copy()
             resp_ch2=ch2.copy()
@@ -53,7 +54,19 @@ def crossover_ind(p1: BinaryIndividual, p2: BinaryIndividual, method: str, ch_mo
     return final_ch1, final_ch2
 
 
-def mutation_ind(ind: BinaryIndividual, method: str, ch_mode: str, probability: float, rng: random.Random)-> BinaryIndividual:
+
+def real_crossover_ind(p1: RealIndividual, p2: RealIndividual, method: str, probability: float,scope: tuple[float,float], rng: random.Random, alpha: float, beta: float, ga_func: GAFunction, goal: str)-> tuple[RealIndividual, RealIndividual]:
+    if len(p1.chromosomes)!=len(p2.chromosomes): raise ValueError("Number of chromosomes not equal")
+    if rng.random()<probability: resp_ch1, resp_ch2= real_crossover_apply(p1.chromosomes, p2.chromosomes,method,scope,rng, alpha, beta, ga_func, goal)
+    else: 
+        resp_ch1= p1.chromosomes.copy()
+        resp_ch2=p2.chromosomes.copy()
+    
+    return RealIndividual(resp_ch1), RealIndividual(resp_ch2)
+
+
+
+def binary_mutation_ind(ind: BinaryIndividual, method: str, ch_mode: str, probability: float, rng: random.Random)-> BinaryIndividual:
     segment= _chromosome_as_segments(ind,ch_mode)
     resp_target=[]
     for ch in segment:

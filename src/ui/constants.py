@@ -94,6 +94,8 @@ DEFAULT_CONFIG= {
     },
     "crossover": {
         "method": "one_point",
+        "alpha": 0.3,
+        "beta": 0.3,
         "probability": 0.8,
         "uniform_swap": 0.5,
     },

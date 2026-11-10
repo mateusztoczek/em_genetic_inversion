@@ -33,6 +33,8 @@ class GAConfig:
     representation: str="binary"
     chromosome_mode: str= "separate"
     crossover_method: str= "one_point"
+    crossover_alpha: float= 0.3
+    crossover_beta: float=0.3
     crossover_rate: float= 0.8
     mutation_method: str= 'one_point'
     mutation_rate: float= 0.2
@@ -55,6 +57,7 @@ class GAConfig:
             raise ValueError("Elitism rate must be in [0, 1).")
         if self.representation not in ("binary", "real"): raise ValueError("Unknown representation")                
         if self.chromosome_mode not in ("separate", "combined"): raise ValueError("Unknown operation mode")
+        if self.crossover_alpha<0 or self.crossover_beta<0: raise ValueError("Alpha and beta cant be negative")
         for name in ("crossover_rate", "mutation_rate", "inversion_rate"):
             rate= getattr(self, name)
             if rate is not None and not 0<= rate<= 1: raise ValueError(f"{name} must be in [0, 1].")
@@ -151,7 +154,7 @@ class GASimulation:
                 if len(childs)==count:break
             elif isinstance(p1, RealIndividual) and isinstance(p2, RealIndividual):
                 
-                ch1,ch2 = real_crossover_ind(p1,p2,cfg.crossover_method,cfg.crossover_rate,self.rng)
+                ch1,ch2 = real_crossover_ind(p1,p2,cfg.crossover_method,cfg.crossover_rate,cfg.scope, self.rng, alpha=cfg.crossover_alpha, beta=cfg.crossover_beta, ga_func= self.function, goal=cfg.goal)
                 for ch in (ch1,ch2):
                     ch=real_mutation_ind(ch,cfg.mutation_method,cfg.mutation_rate,cfg.scope,self.rng)
 

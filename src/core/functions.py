@@ -1,12 +1,13 @@
 import benchmark_functions 
 from opfunu.cec_based.cec2014 import F92014
-
+from collections.abc import Callable
 import numpy as np
 
 
 # mccormick_neg = -McCormick: maximum 1.9133 in the same point as the McCormick minimum, used to test maximisation
 FUNCTION_NAMES= ("mccormick", "mccormick_neg", "rastrigin", "cec2014_f9")
 
+GAFunction=Callable[[list[float]],float]
 
 def validate_function(f_name: str, dim: int):
     if f_name not in FUNCTION_NAMES: raise ValueError(f"Unknown function name: {f_name}")
@@ -15,7 +16,7 @@ def validate_function(f_name: str, dim: int):
     if f_name=="cec2014_f9" and dim not in (10,20,30,100): raise ValueError("Unsupported number of CEC 2014 F9 function dimensions.")
 
 
-def get_function(f_name: str, dim: int):
+def get_function(f_name: str, dim: int)->GAFunction:
     validate_function(f_name, dim)
     if f_name== 'mccormick':
         return benchmark_functions.McCormick()
@@ -26,7 +27,7 @@ def get_function(f_name: str, dim: int):
     if f_name=="cec2014_f9":
         f_func= F92014(ndim=dim)
 
-        def cec_function(x):
+        def cec_function(x: list[float])->float:
             return float(f_func.evaluate(np.asarray(x)))
         return cec_function
     raise ValueError(f"Unknown function name: {f_name}")

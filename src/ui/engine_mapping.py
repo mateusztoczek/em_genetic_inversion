@@ -28,6 +28,8 @@ def to_ga_config(cfg: dict) -> GAConfig:
         chromosome_mode=cfg["chromosome_mode"],
         elitism_rate=cfg["elitism"]["rate"] if cfg["elitism"]["enabled"] else None,
         crossover_method=cfg["crossover"]["method"],
+        crossover_alpha=cfg["crossover"].get("alpha",0.3),
+        crossover_beta=cfg["crossover"].get("beta",0.3),            
         crossover_rate=cfg["crossover"]["probability"],
         mutation_method=cfg["mutation"]["method"],
         mutation_rate=cfg["mutation"]["probability"],
