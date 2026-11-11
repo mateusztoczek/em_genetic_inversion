@@ -77,7 +77,7 @@ def binary_mutation_ind(ind: BinaryIndividual, method: str, ch_mode: str, probab
     return _chromosome_as_ind(resp_target,ind,ch_mode)
 
 
-def real_mutation_ind(ind: RealIndividual, method: str, probability: float,scope: tuple[float,float], rng: random.Random)-> RealIndividual:
+def real_mutation_ind(ind: RealIndividual, method: str, probability: float,scope: tuple[float,float],sigma: float, rng: random.Random)-> RealIndividual:
     if len(ind.chromosomes)==0: raise ValueError("Empty individual")
     if method=='swap': 
         if len(ind.chromosomes)<2: raise ValueError("Minimum 2 genes are required")
@@ -86,7 +86,7 @@ def real_mutation_ind(ind: RealIndividual, method: str, probability: float,scope
     #     return RealIndividual(resp_ch)
     resp_ch=[]
     for i in ind.chromosomes:
-        if rng.random()<probability: resp_i= real_mutation_apply(i, method,scope,rng)
+        if rng.random()<probability: resp_i= real_mutation_apply(i, method,scope,sigma,rng)
         else: resp_i= i
         resp_ch.append(resp_i)
     return RealIndividual(resp_ch)

@@ -33,5 +33,6 @@ def to_ga_config(cfg: dict) -> GAConfig:
         crossover_rate=cfg["crossover"]["probability"],
         mutation_method=cfg["mutation"]["method"],
         mutation_rate=cfg["mutation"]["probability"],
+        mutation_sigma=cfg["mutation"].get("sigma",1.0),
         inversion_rate=cfg["inversion"]["probability"] if cfg["inversion"]["enabled"] else None,
     )

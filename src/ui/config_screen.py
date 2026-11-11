@@ -79,7 +79,8 @@ def build_config() -> dict:
         "chromosome_mode":(s.get("w_chromosome_mode",old.get("chromosome_mode","separate")) if reprs=='binary' else 'separate'),
         "mutation":{
             "method":s.get("w_mutation_method",old["mutation"]["method"]),
-            "probability":s.get("w_mutation_probability",old["mutation"]["probability"])
+            "probability":s.get("w_mutation_probability",old["mutation"]["probability"]),
+            "sigma":s.get("w_mutation_sigma",old["mutation"]["sigma"])
         },
         "inversion": {
             "enabled": (s.get("w_inversion", old["inversion"]["enabled"]) if reprs=='binary' else False),
@@ -206,14 +207,17 @@ def render_operators_section(cfg: dict):
     repres=st.session_state.get("w_representation", cfg.get("representation", "binary"))
     methds=(MUTATION_METHODS_BINARY if repres=='binary' else MUTATION_METHODS_NONBINARY)
 
-    if st.session_state["w_mutation_method"] not in methds: st.session_state["w_mutation_method"] = next(iter(methds))    
     st.subheader("Mutacja")
     seed("w_mutation_method", mutation["method"])
     seed("w_mutation_probability", mutation["probability"])
-
+    if st.session_state["w_mutation_method"] not in methds: st.session_state["w_mutation_method"] = next(iter(methds))    
+    
     col1,col2 = st.columns(2)
     col1.selectbox("Metoda mutacji", list(methds),format_func=methds.get,key="w_mutation_method",)
     col2.slider("Prawdopodobieństwo mutacji",min_value=0.0,max_value=1.0,step=0.01,key="w_mutation_probability",)
+    if repres=="real" and st.session_state["w_mutation_method"]=="gaussian":
+        seed("w_mutation_sigma", mutation.get("sigma", 1.0))
+        st.number_input("Sigma",min_value=0.01,step=0.1,key="w_mutation_sigma")
 
     if repres=='binary':
         st.subheader("Inwersja")

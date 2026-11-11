@@ -102,7 +102,7 @@ DEFAULT_CONFIG= {
     },
     "representation": "binary",
     "chromosome_mode": "separate",
-    "mutation": {"method": "one_point", "probability": 0.2},
+    "mutation": {"method": "one_point", "probability": 0.2, "sigma":1.0},
     "inversion": {"enabled": True, "probability": 0.2},
     "elitism": {"enabled": True, "rate":0.2},
 }

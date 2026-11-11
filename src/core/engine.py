@@ -38,6 +38,7 @@ class GAConfig:
     crossover_rate: float= 0.8
     mutation_method: str= 'one_point'
     mutation_rate: float= 0.2
+    mutation_sigma: float=1.0
     inversion_rate: float | None= None
     seed: int | None= None
 
@@ -58,6 +59,7 @@ class GAConfig:
         if self.representation not in ("binary", "real"): raise ValueError("Unknown representation")                
         if self.chromosome_mode not in ("separate", "combined"): raise ValueError("Unknown operation mode")
         if self.crossover_alpha<0 or self.crossover_beta<0: raise ValueError("Alpha and beta cant be negative")
+        if self.mutation_sigma <=0: raise ValueError("Mutation sigma must be a positive value")
         for name in ("crossover_rate", "mutation_rate", "inversion_rate"):
             rate= getattr(self, name)
             if rate is not None and not 0<= rate<= 1: raise ValueError(f"{name} must be in [0, 1].")
@@ -156,7 +158,7 @@ class GASimulation:
                 
                 ch1,ch2 = real_crossover_ind(p1,p2,cfg.crossover_method,cfg.crossover_rate,cfg.scope, self.rng, alpha=cfg.crossover_alpha, beta=cfg.crossover_beta, ga_func= self.function, goal=cfg.goal)
                 for ch in (ch1,ch2):
-                    ch=real_mutation_ind(ch,cfg.mutation_method,cfg.mutation_rate,cfg.scope,self.rng)
+                    ch=real_mutation_ind(ch,cfg.mutation_method,cfg.mutation_rate,cfg.scope,cfg.mutation_sigma,self.rng)
 
                 childs.append(ch)
                 if len(childs)==count:break
