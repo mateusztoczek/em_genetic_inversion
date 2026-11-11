@@ -1,7 +1,7 @@
 import random
 from .ga_structure import BinaryIndividual, RealIndividual
 from .crossover import binary_crossover_apply, real_crossover_apply
-from .mutation import binary_mutation_apply, real_mutation_apply
+from .mutation import binary_mutation_apply, real_mutation_apply, mutation_swap
 from .inversion import inversion_apply
 from .functions import GAFunction
 
@@ -79,6 +79,11 @@ def binary_mutation_ind(ind: BinaryIndividual, method: str, ch_mode: str, probab
 
 def real_mutation_ind(ind: RealIndividual, method: str, probability: float,scope: tuple[float,float], rng: random.Random)-> RealIndividual:
     if len(ind.chromosomes)==0: raise ValueError("Empty individual")
+    if method=='swap': 
+        if len(ind.chromosomes)<2: raise ValueError("Minimum 2 genes are required")
+        if rng.random()< probability: resp_ch=mutation_swap(ind.chromosomes,rng)
+        else: resp_ch=ind.chromosomes.copy() 
+    #     return RealIndividual(resp_ch)
     resp_ch=[]
     for i in ind.chromosomes:
         if rng.random()<probability: resp_i= real_mutation_apply(i, method,scope,rng)

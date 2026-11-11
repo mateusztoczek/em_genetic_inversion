@@ -33,6 +33,14 @@ def mutation_uniform(g: float,scope: tuple[float, float], rng: random.Random)-> 
     return rng.uniform(s_min, s_max)
 
 
+def mutation_swap(ch: list[float], rng: random.Random)->list[float]:
+    if len(ch)<2: raise ValueError("Minimum 2 genes required")
+    resp= ch.copy()
+    p,q=rng.sample(range(len(resp)),k=2)
+    resp[p],resp[q]=resp[q],resp[p]
+    return resp
+
+
 def binary_mutation_apply(ch: list[int], method: str, rng: random.Random)-> list[int]:
     methods= {
         "one_point": mutation_onepoint,

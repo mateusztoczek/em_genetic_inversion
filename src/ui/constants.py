@@ -75,6 +75,7 @@ MUTATION_METHODS_BINARY={
 
 MUTATION_METHODS_NONBINARY={
     "uniform": "Równoramienna",
+    "swap": "Zamiana indeksów",
     "gaussian": "Gauss"
 }
 
