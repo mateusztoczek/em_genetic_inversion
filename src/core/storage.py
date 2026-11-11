@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS runs(
     mutation_rate REAL NOT NULL,
     inversion_rate REAL,
     seed INTEGER,
-    bit_len INTEGER NOT NULL,
+    bit_len INTEGER,
     elite_count INTEGER NOT NULL,
     config_json TEXT NOT NULL,
     -- pure algorithm time (population init + all epochs), without the time spent writing to this db
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS individuals(
 -- repeated runs of the same configuration grouped together (config_json is identical when the seed is not set)
 CREATE VIEW IF NOT EXISTS config_summary AS
 SELECT config_json, function, goal, dimensions, population, epochs, selection_method, crossover_method, crossover_rate,
-       mutation_method, mutation_rate, inversion_rate, elitism_rate, chromosome_mode,
+       mutation_method, mutation_rate, inversion_rate, elitism_rate, chromosome_mode, representation,
        COUNT(*) AS runs,
        AVG(best_fitness) AS mean_best,
        CASE goal WHEN 'min' THEN MIN(best_fitness) ELSE MAX(best_fitness) END AS best_of_runs,
@@ -91,8 +91,7 @@ WHERE finished_at IS NOT NULL
 GROUP BY config_json;
 """
 
-# columns added after the first version of the schema - added to older databases on open
-LATE_RUN_COLUMNS= {"compute_time_s": "REAL", "best_fitness": "REAL", "best_epoch": "INTEGER", "best_x": "TEXT"}
+LATE_RUN_COLUMNS= {"compute_time_s": "REAL", "best_fitness": "REAL", "best_epoch": "INTEGER", "best_x": "TEXT", "representation": "TEXT NOT NULL DEFAULT 'binary'"}
 
 
 def _now() -> str:
